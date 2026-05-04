@@ -198,8 +198,7 @@
       margin: 8px 0 16px;
     }
 
-    .external-games-section {
-      margin-top: 18px;
+    .external-games-view {
       border: 1px solid rgba(168, 85, 247, 0.48);
       border-radius: 8px;
       padding: 16px;
@@ -210,11 +209,27 @@
       color: #ffffff;
     }
 
-    .external-games-title {
-      margin: 0 0 14px;
+    .external-games-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .external-games-view-title {
+      margin: 0;
       color: #ffffff;
-      font-size: 1.25rem;
+      font-size: clamp(1.8rem, 7vw, 2.6rem);
+      line-height: 1.05;
       letter-spacing: 0;
+    }
+
+    .external-games-back-button {
+      border-color: rgba(255, 255, 255, 0.26);
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
     }
 
     .external-games-list {
@@ -283,7 +298,6 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      justify-self: start;
       min-height: 44px;
       border-radius: 8px;
       padding: 10px 18px;
@@ -642,19 +656,24 @@
         padding: 28px 20px 44px;
       }
 
-      .external-game-card {
-        grid-template-columns: minmax(280px, 1.25fr) minmax(220px, 0.75fr);
-        align-items: stretch;
-      }
-
-      .external-game-media img {
-        height: 100%;
-        min-height: 220px;
+      .external-games-list {
+        max-width: 720px;
       }
 
       .external-game-body {
-        align-content: center;
-        padding: 18px 18px 18px 0;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+
+      .external-game-badge,
+      .external-game-card h3,
+      .external-game-card p {
+        grid-column: 1;
+      }
+
+      .external-game-play-button {
+        grid-column: 2;
+        grid-row: 2 / span 2;
       }
 
       .button-row.two-columns {
@@ -670,36 +689,41 @@
 </head>
 <body>
   <main class="app-shell">
-    <header class="site-header">
-      <div class="site-heading-row">
-        <h1 class="site-title">Party Game Web</h1>
-        <button id="toggle-external-games-button" class="other-games-toggle" type="button" aria-expanded="false" aria-controls="external-games-section">その他ゲーム</button>
-      </div>
-      <p class="site-lead">友達と同じURLから参加して遊べるパーティーゲーム</p>
-    </header>
+    <section id="main-view" class="screen is-active" aria-labelledby="home-title">
+      <header class="site-header">
+        <div class="site-heading-row">
+          <h1 class="site-title">Party Game Web</h1>
+          <button id="open-external-games-button" class="other-games-toggle" type="button" aria-expanded="false" aria-controls="external-games-view">その他ゲーム</button>
+        </div>
+        <p class="site-lead">友達と同じURLから参加して遊べるパーティーゲーム</p>
+      </header>
 
-    <section id="home-screen" class="screen is-active" aria-labelledby="home-title">
-      <h2 id="home-title" class="section-title">ゲーム一覧</h2>
-      <div class="game-list" aria-label="ゲーム一覧">
-        <article class="game-card" data-game-id="wordwolf">
-          <h3>ワードウルフ</h3>
-          <p>少数派のお題を持つ人を会話で探すゲーム</p>
-          <button id="open-wordwolf-button" type="button">このゲームで遊ぶ</button>
-        </article>
-        <article class="game-card spyhunt-card" data-game-id="spyhunt">
-          <h3>スパイ探し</h3>
-          <p>1人または複数人だけ場所を知らない。質問と会話でスパイを見つけるゲーム</p>
-          <button id="open-spyhunt-button" type="button">このゲームで遊ぶ</button>
-        </article>
-      </div>
-
-      <section id="external-games-section" class="external-games-section" aria-labelledby="external-games-title" hidden>
-        <h2 id="external-games-title" class="external-games-title">その他ゲーム一覧</h2>
-        <div id="external-games-list" class="external-games-list" aria-label="その他ゲーム一覧"></div>
+      <section id="home-screen" aria-labelledby="home-title">
+        <h2 id="home-title" class="section-title">ゲーム一覧</h2>
+        <div class="game-list" aria-label="ゲーム一覧">
+          <article class="game-card" data-game-id="wordwolf">
+            <h3>ワードウルフ</h3>
+            <p>少数派のお題を持つ人を会話で探すゲーム</p>
+            <button id="open-wordwolf-button" type="button">このゲームで遊ぶ</button>
+          </article>
+          <article class="game-card spyhunt-card" data-game-id="spyhunt">
+            <h3>スパイ探し</h3>
+            <p>1人または複数人だけ場所を知らない。質問と会話でスパイを見つけるゲーム</p>
+            <button id="open-spyhunt-button" type="button">このゲームで遊ぶ</button>
+          </article>
+        </div>
       </section>
     </section>
 
-    <section id="wordwolf-screen" class="screen" aria-labelledby="wordwolf-title">
+    <section id="external-games-view" class="screen external-games-view" aria-labelledby="external-games-view-title" aria-hidden="true" hidden>
+      <div class="external-games-header">
+        <h2 id="external-games-view-title" class="external-games-view-title">その他ゲーム</h2>
+        <button id="back-external-games-button" class="external-games-back-button" type="button">Party Game Webに戻る</button>
+      </div>
+      <div id="external-games-list" class="external-games-list" aria-label="その他ゲーム"></div>
+    </section>
+
+    <section id="wordwolf-screen" class="screen" aria-labelledby="wordwolf-title" aria-hidden="true" hidden>
       <div class="play-surface">
         <div class="play-header">
           <div>
@@ -1695,7 +1719,9 @@
     };
 
     const el = {
+      mainView: document.querySelector("#main-view"),
       homeScreen: document.querySelector("#home-screen"),
+      externalGamesView: document.querySelector("#external-games-view"),
       wordwolfScreen: document.querySelector("#wordwolf-screen"),
       setupView: document.querySelector("#setup-view"),
       waitingView: document.querySelector("#waiting-view"),
@@ -1703,8 +1729,8 @@
       votingView: document.querySelector("#voting-view"),
       spyGuessView: document.querySelector("#spy-guess-view"),
       resultsView: document.querySelector("#results-view"),
-      toggleExternalGamesButton: document.querySelector("#toggle-external-games-button"),
-      externalGamesSection: document.querySelector("#external-games-section"),
+      openExternalGamesButton: document.querySelector("#open-external-games-button"),
+      backExternalGamesButton: document.querySelector("#back-external-games-button"),
       externalGamesList: document.querySelector("#external-games-list"),
       openWordwolfButton: document.querySelector("#open-wordwolf-button"),
       openSpyHuntButton: document.querySelector("#open-spyhunt-button"),
@@ -1797,7 +1823,7 @@
       el.nicknameInput.value = state.playerName;
 
       renderExternalGames();
-      setExternalGamesExpanded(false);
+      showScreen("home");
       renderSettingsOptions();
       applySelectedGameType(state.selectedGameType);
       wireEvents();
@@ -1815,7 +1841,8 @@
     }
 
     function wireEvents() {
-      el.toggleExternalGamesButton.addEventListener("click", toggleExternalGames);
+      el.openExternalGamesButton.addEventListener("click", () => showScreen("externalGames"));
+      el.backExternalGamesButton.addEventListener("click", () => showScreen("home"));
       el.openWordwolfButton.addEventListener("click", () => selectGame("wordwolf"));
       el.openSpyHuntButton.addEventListener("click", () => selectGame("spyhunt"));
       el.backHomeButton.addEventListener("click", () => showScreen("home"));
@@ -1898,15 +1925,6 @@
         card.append(mediaLink, body);
         el.externalGamesList.append(card);
       });
-    }
-
-    function toggleExternalGames() {
-      setExternalGamesExpanded(el.externalGamesSection.hidden);
-    }
-
-    function setExternalGamesExpanded(isExpanded) {
-      el.externalGamesSection.hidden = !isExpanded;
-      el.toggleExternalGamesButton.setAttribute("aria-expanded", String(isExpanded));
     }
 
     function initFirebase() {
@@ -3499,8 +3517,20 @@
     }
 
     function showScreen(screenName) {
-      el.homeScreen.classList.toggle("is-active", screenName === "home");
-      el.wordwolfScreen.classList.toggle("is-active", screenName === "wordwolf");
+      const isHome = screenName === "home";
+      const isExternalGames = screenName === "externalGames";
+      const isWordwolf = screenName === "wordwolf";
+
+      setViewVisibility(el.mainView, isHome);
+      setViewVisibility(el.externalGamesView, isExternalGames);
+      setViewVisibility(el.wordwolfScreen, isWordwolf);
+      el.openExternalGamesButton.setAttribute("aria-expanded", String(isExternalGames));
+    }
+
+    function setViewVisibility(element, isVisible) {
+      element.hidden = !isVisible;
+      element.classList.toggle("is-active", isVisible);
+      element.setAttribute("aria-hidden", String(!isVisible));
     }
 
     function showWordwolfView(viewName) {
