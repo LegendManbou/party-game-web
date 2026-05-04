@@ -108,11 +108,32 @@
       padding: 12px 0 20px;
     }
 
+    .site-heading-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
     .site-title {
       margin: 0;
       font-size: clamp(2rem, 8vw, 3.2rem);
       letter-spacing: 0;
       line-height: 1;
+    }
+
+    .other-games-toggle {
+      min-height: 44px;
+      border: 1px solid rgba(124, 58, 237, 0.46);
+      padding: 10px 14px;
+      background: linear-gradient(135deg, #7c3aed, #db2777 52%, #2563eb);
+      box-shadow: 0 10px 22px rgba(124, 58, 237, 0.22);
+      white-space: nowrap;
+    }
+
+    .other-games-toggle[aria-expanded="true"] {
+      border-color: rgba(244, 114, 182, 0.72);
+      box-shadow: 0 12px 28px rgba(219, 39, 119, 0.26);
     }
 
     .site-lead {
@@ -127,6 +148,10 @@
 
     .screen.is-active {
       display: block;
+    }
+
+    [hidden] {
+      display: none !important;
     }
 
     .section-title {
@@ -171,6 +196,102 @@
 
     .game-card p {
       margin: 8px 0 16px;
+    }
+
+    .external-games-section {
+      margin-top: 18px;
+      border: 1px solid rgba(168, 85, 247, 0.48);
+      border-radius: 8px;
+      padding: 16px;
+      background:
+        linear-gradient(135deg, rgba(219, 39, 119, 0.28), rgba(37, 99, 235, 0.22)),
+        #150821;
+      box-shadow: 0 18px 36px rgba(79, 70, 229, 0.2);
+      color: #ffffff;
+    }
+
+    .external-games-title {
+      margin: 0 0 14px;
+      color: #ffffff;
+      font-size: 1.25rem;
+      letter-spacing: 0;
+    }
+
+    .external-games-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .external-game-card {
+      display: grid;
+      gap: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(244, 114, 182, 0.5);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    }
+
+    .external-game-media {
+      display: block;
+      background: #2b0a45;
+    }
+
+    .external-game-media:focus-visible,
+    .external-game-play-button:focus-visible {
+      outline: 3px solid rgba(96, 165, 250, 0.48);
+      outline-offset: 3px;
+    }
+
+    .external-game-media img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .external-game-body {
+      display: grid;
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+
+    .external-game-badge {
+      justify-self: start;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: rgba(219, 39, 119, 0.28);
+      color: #fce7f3;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .external-game-card h3 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 1.35rem;
+      letter-spacing: 0;
+    }
+
+    .external-game-card p {
+      margin: 0;
+      color: #dbeafe;
+    }
+
+    .external-game-play-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      justify-self: start;
+      min-height: 44px;
+      border-radius: 8px;
+      padding: 10px 18px;
+      background: linear-gradient(135deg, #f472b6, #60a5fa);
+      color: #ffffff;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 10px 20px rgba(96, 165, 250, 0.24);
     }
 
     .play-surface {
@@ -521,6 +642,21 @@
         padding: 28px 20px 44px;
       }
 
+      .external-game-card {
+        grid-template-columns: minmax(280px, 1.25fr) minmax(220px, 0.75fr);
+        align-items: stretch;
+      }
+
+      .external-game-media img {
+        height: 100%;
+        min-height: 220px;
+      }
+
+      .external-game-body {
+        align-content: center;
+        padding: 18px 18px 18px 0;
+      }
+
       .button-row.two-columns {
         grid-template-columns: 1fr 1fr;
       }
@@ -535,7 +671,10 @@
 <body>
   <main class="app-shell">
     <header class="site-header">
-      <h1 class="site-title">Party Game Web</h1>
+      <div class="site-heading-row">
+        <h1 class="site-title">Party Game Web</h1>
+        <button id="toggle-external-games-button" class="other-games-toggle" type="button" aria-expanded="false" aria-controls="external-games-section">その他ゲーム</button>
+      </div>
       <p class="site-lead">友達と同じURLから参加して遊べるパーティーゲーム</p>
     </header>
 
@@ -553,6 +692,11 @@
           <button id="open-spyhunt-button" type="button">このゲームで遊ぶ</button>
         </article>
       </div>
+
+      <section id="external-games-section" class="external-games-section" aria-labelledby="external-games-title" hidden>
+        <h2 id="external-games-title" class="external-games-title">その他ゲーム一覧</h2>
+        <div id="external-games-list" class="external-games-list" aria-label="その他ゲーム一覧"></div>
+      </section>
     </section>
 
     <section id="wordwolf-screen" class="screen" aria-labelledby="wordwolf-title">
@@ -846,6 +990,16 @@
     const games = [
       { id: "wordwolf", title: "ワードウルフ" },
       { id: "spyhunt", title: "スパイ探し" }
+    ];
+
+    const externalGames = [
+      {
+        title: "ガーティックフォン",
+        description: "絵を描いて伝える定番パーティーゲーム",
+        image: "assets/gartic-phone.png",
+        url: "https://garticphone.com/ja",
+        badge: "外部サイト"
+      }
     ];
 
     const SPYHUNT_GENERIC_QUESTIONS = [
@@ -1549,6 +1703,9 @@
       votingView: document.querySelector("#voting-view"),
       spyGuessView: document.querySelector("#spy-guess-view"),
       resultsView: document.querySelector("#results-view"),
+      toggleExternalGamesButton: document.querySelector("#toggle-external-games-button"),
+      externalGamesSection: document.querySelector("#external-games-section"),
+      externalGamesList: document.querySelector("#external-games-list"),
       openWordwolfButton: document.querySelector("#open-wordwolf-button"),
       openSpyHuntButton: document.querySelector("#open-spyhunt-button"),
       backHomeButton: document.querySelector("#back-home-button"),
@@ -1631,7 +1788,7 @@
       winnerText: document.querySelector("#winner-text")
     };
 
-    boot();
+    document.addEventListener("DOMContentLoaded", boot);
 
     function boot() {
       state.playerId = getOrCreatePlayerId();
@@ -1639,6 +1796,8 @@
       state.selectedGameType = getValidGameType(readStorage(storageKeys.selectedGameType));
       el.nicknameInput.value = state.playerName;
 
+      renderExternalGames();
+      setExternalGamesExpanded(false);
       renderSettingsOptions();
       applySelectedGameType(state.selectedGameType);
       wireEvents();
@@ -1656,6 +1815,7 @@
     }
 
     function wireEvents() {
+      el.toggleExternalGamesButton.addEventListener("click", toggleExternalGames);
       el.openWordwolfButton.addEventListener("click", () => selectGame("wordwolf"));
       el.openSpyHuntButton.addEventListener("click", () => selectGame("spyhunt"));
       el.backHomeButton.addEventListener("click", () => showScreen("home"));
@@ -1688,6 +1848,65 @@
           joinRoom();
         }
       });
+    }
+
+    function renderExternalGames() {
+      el.externalGamesList.replaceChildren();
+
+      externalGames.forEach((game) => {
+        const card = document.createElement("article");
+        card.className = "external-game-card";
+
+        const mediaLink = document.createElement("a");
+        mediaLink.className = "external-game-media";
+        mediaLink.href = game.url;
+        mediaLink.target = "_blank";
+        mediaLink.rel = "noopener noreferrer";
+        mediaLink.setAttribute("aria-label", `${game.title}を新しいタブで開く`);
+
+        const image = document.createElement("img");
+        image.src = game.image;
+        image.alt = `${game.title}のイメージ`;
+        image.loading = "lazy";
+        mediaLink.append(image);
+
+        const body = document.createElement("div");
+        body.className = "external-game-body";
+
+        if (game.badge) {
+          const badge = document.createElement("span");
+          badge.className = "external-game-badge";
+          badge.textContent = game.badge;
+          body.append(badge);
+        }
+
+        const title = document.createElement("h3");
+        title.textContent = game.title;
+
+        const description = document.createElement("p");
+        description.textContent = game.description;
+
+        const playLink = document.createElement("a");
+        playLink.className = "external-game-play-button";
+        playLink.href = game.url;
+        playLink.target = "_blank";
+        playLink.rel = "noopener noreferrer";
+        playLink.textContent = "遊ぶ";
+        playLink.setAttribute("aria-label", `${game.title}を新しいタブで開く`);
+
+        body.append(title, description, playLink);
+        card.append(mediaLink, body);
+        el.externalGamesList.append(card);
+      });
+    }
+
+    function toggleExternalGames() {
+      setExternalGamesExpanded(el.externalGamesSection.hidden);
+    }
+
+    function setExternalGamesExpanded(isExpanded) {
+      el.externalGamesSection.hidden = !isExpanded;
+      el.toggleExternalGamesButton.setAttribute("aria-expanded", String(isExpanded));
     }
 
     function initFirebase() {
