@@ -152,6 +152,11 @@
       padding: 18px;
     }
 
+    .game-card.spyhunt-card {
+      border-color: #b7cff9;
+      background: #f7fbff;
+    }
+
     .game-card h3,
     .view-title {
       margin: 0;
@@ -236,6 +241,24 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fbfcfe;
+    }
+
+    .setting-field.is-hidden,
+    .game-only.is-hidden {
+      display: none;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    .spyhunt-theme {
+      --surface-strong: #eef5ff;
+      --primary: #2858b8;
+      --primary-dark: #183c86;
+      --accent: #6bd3e6;
+      --info-bg: #eef5ff;
+      --ok-bg: #edf8ff;
     }
 
     .phase-row {
@@ -330,6 +353,11 @@
       text-align: center;
     }
 
+    .topic-box.spy-card {
+      background: #f5fbff;
+      border-color: #6bd3e6;
+    }
+
     .topic-label {
       margin: 0;
       color: var(--muted);
@@ -344,6 +372,45 @@
       letter-spacing: 0;
       line-height: 1.1;
       overflow-wrap: anywhere;
+    }
+
+    .spyhunt-theme .topic-word {
+      color: #15377a;
+    }
+
+    .secret-detail {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .candidate-list,
+    .question-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .candidate-list li,
+    .question-list li {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #ffffff;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .question-box {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
     }
 
     .timer-box {
@@ -381,6 +448,15 @@
       border-radius: 8px;
       padding: 11px;
       background: #ffffff;
+    }
+
+    .vote-card.is-selected {
+      border-color: var(--primary);
+      background: #f2f8ff;
+    }
+
+    .vote-card button.is-selected {
+      background: var(--primary-dark);
     }
 
     .result-word-grid {
@@ -468,8 +544,13 @@
       <div class="game-list" aria-label="ゲーム一覧">
         <article class="game-card" data-game-id="wordwolf">
           <h3>ワードウルフ</h3>
-          <p>友達と同じURLから参加して遊べるワードウルフ</p>
+          <p>少数派のお題を持つ人を会話で探すゲーム</p>
           <button id="open-wordwolf-button" type="button">このゲームで遊ぶ</button>
+        </article>
+        <article class="game-card spyhunt-card" data-game-id="spyhunt">
+          <h3>スパイ探し</h3>
+          <p>1人または複数人だけ場所を知らない。質問と会話でスパイを見つけるゲーム</p>
+          <button id="open-spyhunt-button" type="button">このゲームで遊ぶ</button>
         </article>
       </div>
     </section>
@@ -550,9 +631,15 @@
                 </select>
               </label>
               <label>
-                お題ジャンル
+                <span id="topic-genre-label">お題ジャンル</span>
                 <select id="topic-genre-select">
                   <option value="all">すべて</option>
+                </select>
+              </label>
+              <label id="spy-count-setting" class="setting-field is-hidden">
+                スパイ人数
+                <select id="spy-count-select">
+                  <option value="1">1人</option>
                 </select>
               </label>
             </div>
@@ -571,10 +658,24 @@
 
         <div id="playing-view" class="view">
           <div class="stack">
-            <div class="topic-box">
-              <p class="topic-label">あなたのお題</p>
+            <div id="role-card" class="topic-box">
+              <p id="my-role-label" class="topic-label">あなたのお題</p>
               <p id="my-topic" class="topic-word">-</p>
+              <p id="my-role-detail" class="secret-detail"></p>
               <strong>他の人に見せないでください</strong>
+            </div>
+
+            <div id="spy-candidate-box" class="question-box game-only is-hidden">
+              <h3 class="view-title">候補場所リスト</h3>
+              <ul id="candidate-location-list" class="candidate-list"></ul>
+            </div>
+
+            <div id="question-box" class="question-box game-only is-hidden">
+              <div class="phase-row">
+                <h3 class="view-title">質問例</h3>
+                <button id="refresh-question-button" class="compact-button ghost-button" type="button">別の質問例</button>
+              </div>
+              <ul id="question-list" class="question-list"></ul>
             </div>
 
             <div class="timer-box">
@@ -602,12 +703,17 @@
 
         <div id="voting-view" class="view">
           <div class="stack">
-            <div class="status">投票中です。人狼だと思う人を選んでください。</div>
+            <div id="voting-instruction" class="status">投票中です。人狼だと思う人を選んでください。</div>
 
             <div>
               <h3 class="view-title">投票</h3>
+              <p id="vote-limit-hint" class="hint"></p>
               <p id="vote-progress" class="hint">0 / 0 投票済み</p>
               <ul id="vote-target-list" class="vote-list"></ul>
+            </div>
+
+            <div id="spy-vote-submit-box" class="game-only is-hidden">
+              <button id="submit-spy-vote-button" type="button">投票する</button>
             </div>
 
             <div id="my-vote-status" class="status" role="status" aria-live="polite"></div>
@@ -629,17 +735,45 @@
           </div>
         </div>
 
+        <div id="spy-guess-view" class="view">
+          <div class="stack">
+            <div class="status">スパイの場所当てフェーズです。</div>
+
+            <div id="spy-guess-player-box" class="question-box">
+              <h3 class="view-title">場所を当てる</h3>
+              <p id="spy-guess-player-note" class="hint">スパイは候補場所から正解だと思う場所を選んでください。</p>
+              <ul id="spy-guess-location-list" class="vote-list"></ul>
+              <div id="my-spy-guess-status" class="status" role="status" aria-live="polite"></div>
+            </div>
+
+            <div>
+              <h3 class="view-title">参加者</h3>
+              <ul id="spy-guess-player-list" class="player-list"></ul>
+            </div>
+
+            <div id="host-spy-guess-controls" class="host-only">
+              <div class="button-row">
+                <button id="show-spy-results-button" class="secondary-button" type="button">結果発表</button>
+              </div>
+              <div id="spy-guess-host-note" class="status"></div>
+            </div>
+
+            <div id="spy-guess-status" class="status" role="status" aria-live="polite"></div>
+            <button class="leave-room-button ghost-button" type="button">部屋を退出</button>
+          </div>
+        </div>
+
         <div id="results-view" class="view">
           <div class="stack">
             <div class="status">結果発表中</div>
 
             <div class="result-word-grid">
               <div class="result-word">
-                <span class="hint">市民のお題</span>
+                <span id="result-majority-label" class="hint">市民のお題</span>
                 <strong id="result-majority-word">-</strong>
               </div>
               <div class="result-word">
-                <span class="hint">人狼のお題</span>
+                <span id="result-minority-label" class="hint">人狼のお題</span>
                 <strong id="result-minority-word">-</strong>
               </div>
             </div>
@@ -652,12 +786,12 @@
             </div>
 
             <div>
-              <h3 class="view-title">投票先</h3>
+              <h3 id="result-vote-title" class="view-title">投票先</h3>
               <ul id="result-vote-list" class="result-list"></ul>
             </div>
 
             <div>
-              <h3 class="view-title">得票数</h3>
+              <h3 id="result-count-title" class="view-title">得票数</h3>
               <ul id="result-count-list" class="result-list"></ul>
             </div>
 
@@ -683,7 +817,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getDatabase, ref, set, update, onValue, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+    import { getDatabase, ref, set, update, onValue, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDf4KifElRKeYxNzfpV1_H5kPi7mGkOTQs",
@@ -705,13 +839,155 @@
       waiting: "待機中",
       playing: "話し合い中",
       voting: "投票中",
+      spyGuess: "場所当て中",
       results: "結果発表中"
     };
 
-    // Later games can be added here and connected to cards in the game list.
     const games = [
-      { id: "wordwolf", title: "ワードウルフ" }
+      { id: "wordwolf", title: "ワードウルフ" },
+      { id: "spyhunt", title: "スパイ探し" }
     ];
+
+    const SPYHUNT_GENERIC_QUESTIONS = [
+      "ここでは食べ物を買えますか？",
+      "ここに制服はありますか？",
+      "ここは静かにする場所ですか？",
+      "ここに子どもは多いですか？",
+      "ここでスマホを使っても大丈夫ですか？",
+      "ここではお金を払う場面がありますか？",
+      "ここに長く滞在する人はいますか？",
+      "ここでは順番待ちをしますか？",
+      "ここで働いている人は多いですか？",
+      "ここは屋内ですか？",
+      "ここでは大きな音がしますか？",
+      "ここには決まった入口がありますか？"
+    ];
+
+    const SPYHUNT_LOCATION_SOURCE = {
+      "日常": [
+        ["リビング", ["家族", "来客", "子ども", "配達員", "掃除担当"], ["ここではくつろぐ時間が多いですか？", "ここで会話は自然に始まりますか？"]],
+        ["キッチン", ["料理担当", "家族", "皿洗い係", "買い物帰り", "味見係"], ["ここでは水をよく使いますか？", "ここではにおいで状況が分かりますか？"]],
+        ["寝室", ["住人", "目覚まし係", "片付け係", "来客", "家族"], ["ここでは静かにした方がよいですか？", "ここには個人的な物が多いですか？"]],
+        ["浴室", ["住人", "掃除担当", "子ども", "修理業者", "家族"], ["ここでは濡れることがありますか？", "ここに長くいると暑くなりますか？"]],
+        ["ベランダ", ["住人", "洗濯担当", "園芸担当", "隣人", "配達員"], ["ここでは外の天気を気にしますか？", "ここには植物が置かれやすいですか？"]],
+        ["公園", ["散歩中の人", "子ども", "保護者", "清掃員", "ランナー"], ["ここでは走っても不自然ではないですか？", "ここに遊具はありますか？"]],
+        ["駅", ["乗客", "駅員", "売店スタッフ", "待ち合わせ相手", "観光客"], ["ここでは時刻を気にしますか？", "ここでは人の流れが多いですか？"]],
+        ["バス停", ["乗客", "運転手", "学生", "通勤者", "案内係"], ["ここでは待つ時間が発生しますか？", "ここに屋根があると助かりますか？"]],
+        ["病院", ["患者", "医師", "看護師", "受付", "見舞い客"], ["ここでは名前を呼ばれることがありますか？", "ここでは体調の話をしやすいですか？"]],
+        ["図書館", ["司書", "利用者", "学生", "研究者", "受付"], ["ここでは静かにする必要がありますか？", "ここでは借りるものがありますか？"]],
+        ["郵便局", ["窓口係", "配達員", "利用者", "仕分け係", "案内係"], ["ここでは番号札を取ることがありますか？", "ここでは何かを送れますか？"]],
+        ["銀行", ["窓口係", "利用者", "警備員", "案内係", "支店長"], ["ここでは本人確認をされますか？", "ここでは大事な数字を扱いますか？"]],
+        ["美容院", ["美容師", "客", "受付", "アシスタント", "店長"], ["ここでは鏡をよく見ますか？", "ここでは予約があると便利ですか？"]],
+        ["ジム", ["トレーナー", "会員", "受付", "清掃スタッフ", "見学者"], ["ここでは汗をかきやすいですか？", "ここでは着替えることがありますか？"]],
+        ["コインランドリー", ["利用者", "管理人", "学生", "旅行者", "清掃員"], ["ここでは時間を待つことがありますか？", "ここでは小銭やカードを使いますか？"]]
+      ],
+      "学校": [
+        ["教室", ["先生", "生徒", "日直", "転校生", "委員長"], ["ここでは席が決まっていることが多いですか？", "ここでは手を挙げる場面がありますか？"]],
+        ["職員室", ["先生", "校長", "教頭", "事務員", "用務員"], ["ここでは大人同士の会話が多いですか？", "ここでは入る前に声をかけますか？"]],
+        ["保健室", ["保健室の先生", "生徒", "付き添い", "担任", "養護教諭"], ["ここでは体調を聞かれますか？", "ここでは横になることがありますか？"]],
+        ["体育館", ["体育教師", "生徒", "部員", "審判", "用具係"], ["ここでは声が響きやすいですか？", "ここでは靴を替えることがありますか？"]],
+        ["校庭", ["生徒", "体育教師", "サッカー部員", "用務員", "見学者"], ["ここでは天気の影響を受けますか？", "ここでは走る人が多いですか？"]],
+        ["図書室", ["司書", "図書委員", "生徒", "先生", "読書好き"], ["ここでは静かにする必要がありますか？", "ここでは返却期限がありますか？"]],
+        ["音楽室", ["音楽教師", "生徒", "ピアノ係", "合唱部員", "指揮者"], ["ここでは音を出しても自然ですか？", "ここには特別な椅子や道具がありますか？"]],
+        ["理科室", ["理科教師", "生徒", "実験係", "安全係", "助手"], ["ここでは触ると危ない物がありますか？", "ここでは班で作業しますか？"]],
+        ["美術室", ["美術教師", "生徒", "モデル", "用具係", "美術部員"], ["ここでは汚れてもよい服が便利ですか？", "ここでは作品が残りますか？"]],
+        ["家庭科室", ["家庭科教師", "生徒", "調理係", "裁縫係", "片付け係"], ["ここでは火や水を使いますか？", "ここでは完成したものを持ち帰れますか？"]],
+        ["校門", ["生徒", "先生", "警備員", "保護者", "遅刻者"], ["ここではあいさつをされますか？", "ここでは時間に厳しいですか？"]],
+        ["廊下", ["生徒", "先生", "掃除当番", "来客", "委員"], ["ここでは走ると注意されますか？", "ここでは人とすれ違いますか？"]],
+        ["下駄箱", ["生徒", "先生", "新入生", "掃除当番", "来客"], ["ここでは持ち物を入れ替えますか？", "ここでは朝と帰りに使いますか？"]],
+        ["購買", ["店員", "生徒", "先生", "当番", "売り子"], ["ここでは昼前に混みますか？", "ここでは小さな買い物をしますか？"]],
+        ["プール", ["体育教師", "生徒", "監視係", "水泳部員", "見学者"], ["ここでは濡れる準備が必要ですか？", "ここでは季節が関係しますか？"]]
+      ],
+      "お店": [
+        ["コンビニ", ["店員", "客", "店長", "品出し担当", "配達員"], ["ここでは短時間で買い物できますか？", "ここでは深夜でも人がいますか？"]],
+        ["スーパー", ["レジ係", "客", "精肉担当", "青果担当", "店長"], ["ここではカートを使うことがありますか？", "ここでは献立を考えますか？"]],
+        ["映画館", ["客", "店員", "チケット係", "清掃スタッフ", "ポップコーン売り場の店員"], ["ここでは開始時間を気にしますか？", "ここでは暗くなる時間がありますか？"]],
+        ["カフェ", ["バリスタ", "客", "店長", "ホール係", "作業中の人"], ["ここでは長居する人がいますか？", "ここでは飲み物を先に選びますか？"]],
+        ["レストラン", ["シェフ", "客", "ウェイター", "店長", "予約客"], ["ここではメニューを見ますか？", "ここでは人数を聞かれますか？"]],
+        ["パン屋", ["店員", "客", "職人", "レジ係", "開店待ちの人"], ["ここではトングを使いますか？", "ここでは焼きたてが喜ばれますか？"]],
+        ["本屋", ["店員", "客", "棚担当", "レジ係", "立ち読み中の人"], ["ここでは探すジャンルを聞かれますか？", "ここでは静かな会話が多いですか？"]],
+        ["家電量販店", ["販売員", "客", "レジ係", "修理受付", "デモ担当"], ["ここでは性能を比べますか？", "ここでは保証の話が出ますか？"]],
+        ["薬局", ["薬剤師", "客", "登録販売者", "受付", "店長"], ["ここでは症状を聞かれることがありますか？", "ここでは説明を受けて買いますか？"]],
+        ["花屋", ["花屋", "客", "配達員", "アレンジ担当", "店長"], ["ここでは贈り物の相談をしますか？", "ここでは季節を感じやすいですか？"]],
+        ["服屋", ["販売員", "客", "試着係", "店長", "マネキン担当"], ["ここではサイズを気にしますか？", "ここでは鏡を見ることがありますか？"]],
+        ["雑貨屋", ["店員", "客", "仕入れ担当", "レジ係", "プレゼント探しの人"], ["ここでは目的なく見て回れますか？", "ここでは小物を選びますか？"]],
+        ["ゲームセンター", ["店員", "客", "メンテナンス係", "学生", "景品担当"], ["ここでは音が大きいですか？", "ここでは両替することがありますか？"]],
+        ["ホームセンター", ["店員", "客", "工具担当", "園芸担当", "配送係"], ["ここでは大きな商品を買いますか？", "ここでは用途を説明しますか？"]],
+        ["ガソリンスタンド", ["スタッフ", "客", "整備士", "店長", "洗車担当"], ["ここでは車で来る人が多いですか？", "ここではにおいで場所を感じますか？"]]
+      ],
+      "旅行": [
+        ["空港", ["旅行者", "受付係", "保安検査員", "客室乗務員", "案内係"], ["ここでは荷物の重さを気にしますか？", "ここでは時間に余裕が必要ですか？"]],
+        ["ホテル", ["宿泊客", "フロント係", "清掃スタッフ", "支配人", "ベルスタッフ"], ["ここでは名前を伝える場面がありますか？", "ここでは鍵やカードを受け取りますか？"]],
+        ["旅館", ["宿泊客", "女将", "仲居", "板前", "清掃係"], ["ここでは靴を脱ぐことがありますか？", "ここでは食事の時間を聞かれますか？"]],
+        ["温泉", ["入浴客", "受付", "清掃スタッフ", "旅館客", "常連"], ["ここでは静かに過ごしたい人が多いですか？", "ここではタオルが必要ですか？"]],
+        ["観光案内所", ["観光客", "案内係", "地元の人", "通訳", "受付"], ["ここでは地図をもらえますか？", "ここではおすすめを聞きますか？"]],
+        ["水族館", ["客", "飼育員", "案内係", "売店スタッフ", "子ども"], ["ここでは暗い展示がありますか？", "ここでは生き物の動きを見ますか？"]],
+        ["動物園", ["客", "飼育員", "案内係", "売店スタッフ", "遠足の先生"], ["ここでは歩く距離が長いですか？", "ここではにおいが気になることがありますか？"]],
+        ["美術館", ["来館者", "学芸員", "受付", "警備員", "解説員"], ["ここでは距離を取って見ますか？", "ここでは静かに歩きますか？"]],
+        ["博物館", ["来館者", "学芸員", "受付", "案内係", "研究員"], ["ここでは説明文を読みますか？", "ここでは昔のものを見ますか？"]],
+        ["キャンプ場", ["キャンパー", "管理人", "料理担当", "火起こし係", "子ども"], ["ここでは天気が大事ですか？", "ここでは夜に暗くなりますか？"]],
+        ["遊園地", ["客", "スタッフ", "案内係", "清掃員", "迷子"], ["ここでは待ち時間が発生しますか？", "ここでは乗るものを選びますか？"]],
+        ["海水浴場", ["海水浴客", "監視員", "売店スタッフ", "家族", "ライフセーバー"], ["ここでは日焼けを気にしますか？", "ここでは濡れる前提ですか？"]],
+        ["山小屋", ["登山客", "管理人", "ガイド", "料理係", "休憩中の人"], ["ここでは早寝早起きが多いですか？", "ここでは荷物を軽くしたいですか？"]],
+        ["土産物屋", ["店員", "観光客", "試食係", "レジ係", "配達係"], ["ここでは誰かのために選びますか？", "ここでは地域らしさを探しますか？"]],
+        ["新幹線の車内", ["乗客", "車掌", "販売員", "出張中の人", "旅行者"], ["ここでは座席番号を気にしますか？", "ここでは景色が動いて見えますか？"]]
+      ],
+      "ファンタジー": [
+        ["王城", ["王様", "姫", "騎士", "大臣", "召使い"], ["ここでは礼儀を重んじますか？", "ここでは身分が分かれていますか？"]],
+        ["魔法学校", ["魔法使い", "生徒", "校長", "薬草係", "使い魔係"], ["ここでは失敗すると煙が出そうですか？", "ここでは珍しい授業がありますか？"]],
+        ["冒険者ギルド", ["冒険者", "受付", "依頼人", "酒場係", "ベテラン"], ["ここでは依頼を受けますか？", "ここでは腕試しの話が出ますか？"]],
+        ["ドラゴンの洞窟", ["ドラゴン", "勇者", "盗賊", "魔法使い", "案内人"], ["ここでは声が響きそうですか？", "ここでは宝物の話が出ますか？"]],
+        ["妖精の森", ["妖精", "旅人", "木こり", "薬草師", "迷子"], ["ここでは道に迷いやすいですか？", "ここでは自然の音が多いですか？"]],
+        ["錬金術工房", ["錬金術師", "助手", "依頼人", "見習い", "商人"], ["ここでは材料を混ぜますか？", "ここでは爆発に注意しますか？"]],
+        ["地下迷宮", ["探索者", "罠師", "案内人", "魔物", "地図係"], ["ここでは明かりが重要ですか？", "ここでは戻り道を覚えますか？"]],
+        ["港町", ["船乗り", "商人", "旅人", "漁師", "酒場の店員"], ["ここでは遠くの話が聞けますか？", "ここでは荷物が行き来しますか？"]],
+        ["空中庭園", ["庭師", "王族", "魔法使い", "見張り", "来賓"], ["ここでは落とし物に注意しますか？", "ここでは景色がよく見えますか？"]],
+        ["魔王城", ["魔王", "幹部", "勇者", "見張り", "召使い"], ["ここでは緊張感がありますか？", "ここでは強い相手がいそうですか？"]],
+        ["エルフの村", ["エルフ", "狩人", "薬師", "長老", "旅人"], ["ここでは自然と暮らしていますか？", "ここでは長く生きた人がいそうですか？"]],
+        ["ドワーフ鉱山", ["鉱夫", "鍛冶屋", "商人", "親方", "見習い"], ["ここでは道具の音がしますか？", "ここでは地下に進みますか？"]],
+        ["神殿", ["神官", "巡礼者", "騎士", "巫女", "治療師"], ["ここでは静かに祈りますか？", "ここでは特別な儀式がありますか？"]],
+        ["海賊船", ["船長", "船員", "見張り", "料理番", "捕虜"], ["ここでは揺れることがありますか？", "ここでは方角が大事ですか？"]],
+        ["魔法道具店", ["店主", "客", "見習い", "鑑定士", "旅人"], ["ここでは効果を説明されますか？", "ここでは変わった品物を探しますか？"]]
+      ]
+    };
+
+    const SPYHUNT_LOCATIONS = Object.entries(SPYHUNT_LOCATION_SOURCE).flatMap(([genre, locations]) =>
+      locations.map(([location, roles, questions], index) => ({
+        id: `${genre}-${index}-${location}`,
+        genre,
+        location,
+        roles,
+        questions
+      }))
+    );
+
+    const spyHuntGenres = {
+      all: "すべて",
+      ...Object.fromEntries(Object.keys(SPYHUNT_LOCATION_SOURCE).map((genre) => [genre, genre]))
+    };
+
+    const questionSeedStorageKey = "party-game-web.spyhunt.questionSeed";
+    const spyVoteSelection = {
+      selected: new Set()
+    };
+
+    const spyQuestionState = {
+      key: "",
+      seed: 0
+    };
+
+    const gameLabels = {
+      wordwolf: {
+        title: "ワードウルフ",
+        description: "少数派のお題を持つ人を会話で探すゲーム"
+      },
+      spyhunt: {
+        title: "スパイ探し",
+        description: "1人または複数人だけ場所を知らない。質問と会話でスパイを見つけるゲーム"
+      }
+    };
+
+    const validGameTypes = games.map((game) => game.id);
 
     const TOPIC_SETS = {
       "食べ物": [
@@ -1247,7 +1523,8 @@
     const storageKeys = {
       playerId: "party-game-web.playerId",
       nickname: "party-game-web.nickname",
-      roomCode: "party-game-web.roomCode"
+      roomCode: "party-game-web.roomCode",
+      selectedGameType: "party-game-web.selectedGameType"
     };
 
     const state = {
@@ -1256,6 +1533,7 @@
       playerId: "",
       roomCode: "",
       playerName: "",
+      selectedGameType: "wordwolf",
       roomData: null,
       roomUnsubscribe: null,
       timerInterval: null,
@@ -1269,19 +1547,25 @@
       waitingView: document.querySelector("#waiting-view"),
       playingView: document.querySelector("#playing-view"),
       votingView: document.querySelector("#voting-view"),
+      spyGuessView: document.querySelector("#spy-guess-view"),
       resultsView: document.querySelector("#results-view"),
       openWordwolfButton: document.querySelector("#open-wordwolf-button"),
+      openSpyHuntButton: document.querySelector("#open-spyhunt-button"),
       backHomeButton: document.querySelector("#back-home-button"),
       nicknameInput: document.querySelector("#nickname-input"),
       roomCodeInput: document.querySelector("#room-code-input"),
       timerSelect: document.querySelector("#timer-select"),
       topicGenreSelect: document.querySelector("#topic-genre-select"),
+      topicGenreLabel: document.querySelector("#topic-genre-label"),
+      spyCountSetting: document.querySelector("#spy-count-setting"),
+      spyCountSelect: document.querySelector("#spy-count-select"),
       createRoomButton: document.querySelector("#create-room-button"),
       joinRoomButton: document.querySelector("#join-room-button"),
       copyUrlButton: document.querySelector("#copy-url-button"),
       startGameButton: document.querySelector("#start-game-button"),
       goVotingButton: document.querySelector("#go-voting-button"),
       showResultsButton: document.querySelector("#show-results-button"),
+      showSpyResultsButton: document.querySelector("#show-spy-results-button"),
       nextRoundButton: document.querySelector("#next-round-button"),
       backToWaitingButton: document.querySelector("#back-to-waiting-button"),
       resetRoomButton: document.querySelector("#reset-room-button"),
@@ -1290,9 +1574,12 @@
       waitingStatus: document.querySelector("#waiting-status"),
       playingStatus: document.querySelector("#playing-status"),
       votingStatus: document.querySelector("#voting-status"),
+      spyGuessStatus: document.querySelector("#spy-guess-status"),
       resultsStatus: document.querySelector("#results-status"),
       myVoteStatus: document.querySelector("#my-vote-status"),
       votingHostNote: document.querySelector("#voting-host-note"),
+      spyGuessHostNote: document.querySelector("#spy-guess-host-note"),
+      mySpyGuessStatus: document.querySelector("#my-spy-guess-status"),
       phaseLabel: document.querySelector("#phase-label"),
       roundLabel: document.querySelector("#round-label"),
       waitingRoomCode: document.querySelector("#waiting-room-code"),
@@ -1304,18 +1591,39 @@
       waitingPlayerList: document.querySelector("#waiting-player-list"),
       playingPlayerList: document.querySelector("#playing-player-list"),
       votingPlayerList: document.querySelector("#voting-player-list"),
+      spyGuessPlayerList: document.querySelector("#spy-guess-player-list"),
       resultsPlayerList: document.querySelector("#results-player-list"),
       voteTargetList: document.querySelector("#vote-target-list"),
+      votingInstruction: document.querySelector("#voting-instruction"),
+      voteLimitHint: document.querySelector("#vote-limit-hint"),
+      spyVoteSubmitBox: document.querySelector("#spy-vote-submit-box"),
+      submitSpyVoteButton: document.querySelector("#submit-spy-vote-button"),
+      spyGuessPlayerBox: document.querySelector("#spy-guess-player-box"),
+      spyGuessPlayerNote: document.querySelector("#spy-guess-player-note"),
+      spyGuessLocationList: document.querySelector("#spy-guess-location-list"),
       voteProgress: document.querySelector("#vote-progress"),
+      resultVoteTitle: document.querySelector("#result-vote-title"),
       resultVoteList: document.querySelector("#result-vote-list"),
+      resultCountTitle: document.querySelector("#result-count-title"),
       resultCountList: document.querySelector("#result-count-list"),
       hostWaitingControls: document.querySelector("#host-waiting-controls"),
       hostSettingsControls: document.querySelector("#host-settings-controls"),
       guestWaitingMessage: document.querySelector("#guest-waiting-message"),
       hostPlayingControls: document.querySelector("#host-playing-controls"),
       hostVotingControls: document.querySelector("#host-voting-controls"),
+      hostSpyGuessControls: document.querySelector("#host-spy-guess-controls"),
       hostResultsControls: document.querySelector("#host-results-controls"),
+      roleCard: document.querySelector("#role-card"),
+      myRoleLabel: document.querySelector("#my-role-label"),
       myTopic: document.querySelector("#my-topic"),
+      myRoleDetail: document.querySelector("#my-role-detail"),
+      spyCandidateBox: document.querySelector("#spy-candidate-box"),
+      candidateLocationList: document.querySelector("#candidate-location-list"),
+      questionBox: document.querySelector("#question-box"),
+      questionList: document.querySelector("#question-list"),
+      refreshQuestionButton: document.querySelector("#refresh-question-button"),
+      resultMajorityLabel: document.querySelector("#result-majority-label"),
+      resultMinorityLabel: document.querySelector("#result-minority-label"),
       resultMajorityWord: document.querySelector("#result-majority-word"),
       resultMinorityWord: document.querySelector("#result-minority-word"),
       minorityPlayerName: document.querySelector("#minority-player-name"),
@@ -1328,9 +1636,11 @@
     function boot() {
       state.playerId = getOrCreatePlayerId();
       state.playerName = readStorage(storageKeys.nickname);
+      state.selectedGameType = getValidGameType(readStorage(storageKeys.selectedGameType));
       el.nicknameInput.value = state.playerName;
 
-      renderTopicGenreOptions();
+      renderSettingsOptions();
+      applySelectedGameType(state.selectedGameType);
       wireEvents();
       initFirebase();
 
@@ -1346,7 +1656,8 @@
     }
 
     function wireEvents() {
-      el.openWordwolfButton.addEventListener("click", () => showScreen("wordwolf"));
+      el.openWordwolfButton.addEventListener("click", () => selectGame("wordwolf"));
+      el.openSpyHuntButton.addEventListener("click", () => selectGame("spyhunt"));
       el.backHomeButton.addEventListener("click", () => showScreen("home"));
       el.createRoomButton.addEventListener("click", createRoom);
       el.joinRoomButton.addEventListener("click", joinRoom);
@@ -1354,12 +1665,16 @@
       el.startGameButton.addEventListener("click", startGame);
       el.goVotingButton.addEventListener("click", goToVoting);
       el.showResultsButton.addEventListener("click", showResults);
+      el.showSpyResultsButton.addEventListener("click", showResults);
       el.nextRoundButton.addEventListener("click", startNextRound);
       el.backToWaitingButton.addEventListener("click", backToWaiting);
       el.resetRoomButton.addEventListener("click", resetRoom);
       el.leaveRoomButtons.forEach((button) => button.addEventListener("click", leaveRoom));
       el.timerSelect.addEventListener("change", saveSettings);
       el.topicGenreSelect.addEventListener("change", saveSettings);
+      el.spyCountSelect.addEventListener("change", saveSettings);
+      el.submitSpyVoteButton.addEventListener("click", submitSpyVote);
+      el.refreshQuestionButton.addEventListener("click", refreshQuestionExamples);
       el.roomCodeInput.addEventListener("input", () => {
         el.roomCodeInput.value = normalizeRoomCode(el.roomCodeInput.value);
       });
@@ -1401,16 +1716,15 @@
       try {
         const roomCode = await generateUniqueRoomCode();
         const roomRef = ref(state.db, `rooms/${roomCode}`);
+        const gameType = getValidGameType(state.selectedGameType);
 
         await set(roomRef, {
           createdAt: serverTimestamp(),
+          gameType,
           hostId: state.playerId,
           status: "waiting",
           roundNumber: 1,
-          settings: {
-            timerSeconds: DEFAULT_TIMER_SECONDS,
-            topicGenre: "all"
-          },
+          settings: getDefaultSettingsForGame(gameType),
           players: {
             [state.playerId]: {
               name: nickname,
@@ -1451,6 +1765,10 @@
           return;
         }
 
+        const roomData = roomSnapshot.val();
+        state.selectedGameType = getRoomGameType(roomData);
+        applySelectedGameType(state.selectedGameType);
+
         await set(ref(state.db, `rooms/${roomCode}/players/${state.playerId}`), {
           name: nickname,
           joinedAt: serverTimestamp()
@@ -1469,9 +1787,20 @@
       state.playerName = nickname;
       writeStorage(storageKeys.nickname, nickname);
       writeStorage(storageKeys.roomCode, roomCode);
+      writeStorage(storageKeys.selectedGameType, state.selectedGameType);
       updateUrlRoomCode(roomCode);
       showScreen("wordwolf");
+      setupDisconnectCleanup(roomCode);
       subscribeRoom(roomCode);
+    }
+
+    function setupDisconnectCleanup(roomCode) {
+      if (!state.db || !roomCode) return;
+      try {
+        onDisconnect(ref(state.db, `rooms/${roomCode}/players/${state.playerId}`)).remove();
+      } catch (error) {
+        console.warn("onDisconnect setup failed:", error);
+      }
     }
 
     function subscribeRoom(roomCode) {
@@ -1533,6 +1862,10 @@
       }
 
       state.playerName = sanitizeNickname(currentPlayer.name || state.playerName);
+      state.selectedGameType = getRoomGameType(roomData);
+      applySelectedGameType(state.selectedGameType, roomData);
+      ensureHostExists(roomData);
+
       const isHost = roomData.hostId === state.playerId;
       const status = normalizeStatus(roomData.status);
       const settings = getRoomSettings(roomData);
@@ -1545,10 +1878,13 @@
       el.shareUrl.textContent = getShareUrl(state.roomCode);
       el.timerSelect.value = String(settings.timerSeconds);
       el.topicGenreSelect.value = settings.topicGenre;
-      el.settingsSummary.textContent = `設定: ${formatSeconds(settings.timerSeconds)} / ${getGenreLabel(settings.topicGenre)}`;
+      renderSpyCountOptions(players, settings.spyCount);
+      el.spyCountSelect.value = String(settings.spyCount);
+      el.settingsSummary.textContent = buildSettingsSummary(roomData, settings);
       renderPlayerList(el.waitingPlayerList, players, roomData.hostId, isHost);
       renderPlayerList(el.playingPlayerList, players, roomData.hostId, isHost);
       renderPlayerList(el.votingPlayerList, players, roomData.hostId, isHost);
+      renderPlayerList(el.spyGuessPlayerList, players, roomData.hostId, isHost);
       renderPlayerList(el.resultsPlayerList, players, roomData.hostId, isHost);
       toggleHostControls(isHost, status);
 
@@ -1557,6 +1893,9 @@
       } else if (status === "voting") {
         stopTimer();
         renderVotingView(roomData);
+      } else if (status === "spyGuess") {
+        stopTimer();
+        renderSpyGuessView(roomData);
       } else if (status === "results") {
         stopTimer();
         renderResultsView(roomData);
@@ -1568,21 +1907,95 @@
     }
 
     function renderPlayingView(roomData) {
+      if (isSpyHuntRoom(roomData)) {
+        renderSpyHuntPlayingView(roomData);
+        return;
+      }
+
       const topicSet = roomData.game && roomData.game.topicSet;
       const minorityPlayerId = roomData.game && roomData.game.minorityPlayerId;
 
+      el.roleCard.classList.remove("spy-card");
+      el.myRoleLabel.textContent = "あなたのお題";
       if (!topicSet || !minorityPlayerId) {
         el.myTopic.textContent = "読み込み中";
       } else {
         el.myTopic.textContent = minorityPlayerId === state.playerId ? topicSet.minority : topicSet.majority;
       }
+      el.myRoleDetail.textContent = "";
+      el.spyCandidateBox.classList.add("is-hidden");
+      el.questionBox.classList.add("is-hidden");
 
       showWordwolfView("playing");
       setStatus(el.playingStatus, "");
       startTimer(roomData);
     }
 
+    function renderSpyHuntPlayingView(roomData) {
+      const spyHunt = roomData.spyHunt || {};
+      const spyIds = spyHunt.spyIds || {};
+      const isSpy = Boolean(spyIds[state.playerId]);
+      const myRole = spyHunt.roles && spyHunt.roles[state.playerId];
+
+      el.roleCard.classList.add("spy-card");
+      if (isSpy) {
+        el.myRoleLabel.textContent = "あなたはスパイです";
+        el.myTopic.textContent = "場所は分かりません";
+        el.myRoleDetail.textContent = "会話でバレないようにしながら、正解の場所を推理してください。";
+        renderCandidateLocations(spyHunt.candidateLocations || []);
+        el.spyCandidateBox.classList.remove("is-hidden");
+      } else {
+        el.myRoleLabel.textContent = "あなたは一般人です";
+        el.myTopic.textContent = spyHunt.location || "読み込み中";
+        el.myRoleDetail.textContent = myRole
+          ? `役職: ${myRole} / 目的: スパイに場所を悟られないようにしながら、会話でスパイを探してください。`
+          : "役職を読み込み中です。";
+        el.spyCandidateBox.classList.add("is-hidden");
+      }
+
+      renderQuestionExamples(roomData);
+      el.questionBox.classList.remove("is-hidden");
+      showWordwolfView("playing");
+      setStatus(el.playingStatus, "");
+      startTimer(roomData);
+    }
+
+    function renderCandidateLocations(locations) {
+      el.candidateLocationList.replaceChildren();
+      for (const location of locations) {
+        const item = document.createElement("li");
+        item.textContent = location;
+        el.candidateLocationList.append(item);
+      }
+    }
+
+    function renderQuestionExamples(roomData) {
+      const spyHunt = roomData.spyHunt || {};
+      const questions = Array.isArray(spyHunt.questionExamples) && spyHunt.questionExamples.length
+        ? spyHunt.questionExamples
+        : SPYHUNT_GENERIC_QUESTIONS;
+      const roundKey = `${state.roomCode}-${getRoundNumber(roomData)}-${spyHunt.locationId || ""}`;
+      if (spyQuestionState.key !== roundKey) {
+        spyQuestionState.key = roundKey;
+        spyQuestionState.seed = Number(readStorage(questionSeedStorageKey)) || randomIndex(100000);
+      }
+
+      const shuffled = shuffleArrayWithSeed(questions, spyQuestionState.seed);
+      const picked = shuffled.slice(0, Math.min(3, shuffled.length));
+      el.questionList.replaceChildren();
+      for (const question of picked) {
+        const item = document.createElement("li");
+        item.textContent = question;
+        el.questionList.append(item);
+      }
+    }
+
     function renderVotingView(roomData) {
+      if (isSpyHuntRoom(roomData)) {
+        renderSpyHuntVotingView(roomData);
+        return;
+      }
+
       const players = roomData.players || {};
       const votes = roomData.votes || {};
       const entries = getPlayerEntries(players);
@@ -1590,6 +2003,10 @@
       const votedCount = activePlayerIds.filter((playerId) => votes[playerId]).length;
       const myVote = votes[state.playerId];
 
+      el.showResultsButton.textContent = "結果発表";
+      el.votingInstruction.textContent = "投票中です。人狼だと思う人を選んでください。";
+      el.voteLimitHint.textContent = "";
+      el.spyVoteSubmitBox.classList.add("is-hidden");
       el.voteProgress.textContent = `${votedCount} / ${activePlayerIds.length} 投票済み`;
       el.voteTargetList.replaceChildren();
 
@@ -1630,7 +2047,132 @@
       setStatus(el.votingStatus, "");
     }
 
+    function renderSpyHuntVotingView(roomData) {
+      const players = roomData.players || {};
+      const votes = roomData.votes || {};
+      const entries = getPlayerEntries(players);
+      const activePlayerIds = entries.map(([playerId]) => playerId);
+      const votedCount = activePlayerIds.filter((playerId) => votes[playerId]).length;
+      const myVote = votes[state.playerId];
+      const settings = getRoomSettings(roomData);
+      const voteLimit = settings.spyCount;
+
+      el.showResultsButton.textContent = "場所当てへ進む";
+      el.votingInstruction.textContent = "スパイだと思う人を選んでください。";
+      el.voteLimitHint.textContent = `今回は最大${voteLimit}人まで選べます。選択済み ${spyVoteSelection.selected.size} / ${voteLimit}`;
+      el.voteProgress.textContent = `${votedCount} / ${activePlayerIds.length} 投票済み`;
+      el.voteTargetList.replaceChildren();
+      el.spyVoteSubmitBox.classList.toggle("is-hidden", Boolean(myVote));
+      el.submitSpyVoteButton.disabled = Boolean(myVote) || spyVoteSelection.selected.size === 0;
+
+      if (myVote) {
+        spyVoteSelection.selected.clear();
+        const votedNames = getVoteTargetIds(myVote).map((playerId) => getPlayerName(players, playerId)).join("、");
+        setStatus(el.myVoteStatus, `あなたの投票先: ${votedNames || "なし"}`, "ok");
+      } else {
+        setStatus(el.myVoteStatus, "まだ投票していません。");
+      }
+
+      for (const [playerId, player] of entries) {
+        const selected = spyVoteSelection.selected.has(playerId);
+        const item = document.createElement("li");
+        item.className = `vote-card${selected ? " is-selected" : ""}`;
+
+        const name = document.createElement("strong");
+        name.textContent = sanitizeNickname(player.name) || "名前なし";
+        item.append(name);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = selected ? "is-selected" : "";
+        button.textContent = playerId === state.playerId
+          ? "自分には投票できません"
+          : selected ? "選択を外す" : "この人を選ぶ";
+        button.disabled = Boolean(myVote) || playerId === state.playerId;
+        button.addEventListener("click", () => toggleSpyVoteTarget(playerId, voteLimit));
+        item.append(button);
+
+        el.voteTargetList.append(item);
+      }
+
+      if (roomData.hostId === state.playerId) {
+        const allVoted = votedCount >= activePlayerIds.length;
+        setStatus(
+          el.votingHostNote,
+          allVoted ? "全員が投票しました。場所当てへ進めます。" : "全員投票前でも場所当てへ進めますが、未投票者は集計されません。",
+          allVoted ? "ok" : "info"
+        );
+      }
+
+      showWordwolfView("voting");
+      setStatus(el.votingStatus, "");
+    }
+
+    function renderSpyGuessView(roomData) {
+      const players = roomData.players || {};
+      const spyHunt = roomData.spyHunt || {};
+      const spyIds = spyHunt.spyIds || {};
+      const guesses = roomData.spyGuesses || {};
+      const isSpy = Boolean(spyIds[state.playerId]);
+      const spyPlayerIds = Object.keys(spyIds).filter((playerId) => players[playerId]);
+      const answeredCount = spyPlayerIds.filter((playerId) => guesses[playerId]).length;
+
+      el.spyGuessLocationList.replaceChildren();
+      el.spyGuessPlayerBox.classList.toggle("is-hidden", !isSpy);
+
+      if (isSpy) {
+        const myGuess = guesses[state.playerId];
+        el.spyGuessPlayerNote.textContent = myGuess
+          ? "回答済みです。ホストの結果発表を待ってください。"
+          : "候補場所から正解だと思う場所を1つ選んでください。";
+
+        for (const location of spyHunt.candidateLocations || []) {
+          const item = document.createElement("li");
+          item.className = "vote-card";
+          const name = document.createElement("strong");
+          name.textContent = location;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = myGuess ? "回答済み" : "この場所にする";
+          button.disabled = Boolean(myGuess);
+          button.addEventListener("click", () => guessSpyLocation(location));
+          item.append(name, button);
+          el.spyGuessLocationList.append(item);
+        }
+
+        if (myGuess) {
+          setStatus(el.mySpyGuessStatus, `あなたの予想: ${myGuess.location}`, "ok");
+        } else {
+          setStatus(el.mySpyGuessStatus, "まだ回答していません。");
+        }
+      } else {
+        setStatus(el.mySpyGuessStatus, "");
+      }
+
+      if (roomData.hostId === state.playerId) {
+        const guessDetails = spyPlayerIds.map((playerId) => {
+          const suffix = guesses[playerId] ? "回答済み" : "未回答";
+          return `${getPlayerName(players, playerId)}: ${suffix}`;
+        }).join(" / ");
+        setStatus(
+          el.spyGuessHostNote,
+          answeredCount >= spyPlayerIds.length
+            ? `全スパイが回答しました。結果発表できます。${guessDetails}`
+            : `未回答のスパイがいても強制的に結果発表できます。${guessDetails}`,
+          answeredCount >= spyPlayerIds.length ? "ok" : "info"
+        );
+      }
+
+      showWordwolfView("spyGuess");
+      setStatus(el.spyGuessStatus, isSpy ? "" : "スパイの場所予想を待っています。");
+    }
+
     function renderResultsView(roomData) {
+      if (isSpyHuntRoom(roomData)) {
+        renderSpyHuntResultsView(roomData);
+        return;
+      }
+
       const players = roomData.players || {};
       const votes = roomData.votes || {};
       const game = roomData.game || {};
@@ -1638,6 +2180,10 @@
       const result = roomData.result || buildResult(roomData);
       const voteCounts = countVotes(players, votes);
 
+      el.resultMajorityLabel.textContent = "市民のお題";
+      el.resultMinorityLabel.textContent = "人狼のお題";
+      el.resultVoteTitle.textContent = "投票先";
+      el.resultCountTitle.textContent = "得票数";
       el.resultMajorityWord.textContent = topicSet.majority || "-";
       el.resultMinorityWord.textContent = topicSet.minority || "-";
       el.minorityPlayerName.textContent = `人狼: ${getPlayerName(players, game.minorityPlayerId)}`;
@@ -1666,6 +2212,87 @@
         const item = document.createElement("li");
         item.className = "result-item";
         item.textContent = `${getPlayerName(players, playerId)}: ${count}票`;
+        el.resultCountList.append(item);
+      }
+
+      showWordwolfView("results");
+      setStatus(el.resultsStatus, "");
+    }
+
+    function renderSpyHuntResultsView(roomData) {
+      const players = roomData.players || {};
+      const votes = roomData.votes || {};
+      const spyHunt = roomData.spyHunt || {};
+      const result = roomData.result || buildSpyHuntResult(roomData);
+      const voteCounts = result.voteCounts || countSpyVotes(players, votes);
+      const spyNames = Object.keys(spyHunt.spyIds || {})
+        .map((playerId) => getPlayerName(players, playerId))
+        .join("、") || "-";
+      const suspectedNames = (result.suspectedPlayerIds || [])
+        .map((playerId) => getPlayerName(players, playerId))
+        .join("、") || "なし";
+
+      el.resultMajorityLabel.textContent = "正解の場所";
+      el.resultMinorityLabel.textContent = "スパイ";
+      el.resultVoteTitle.textContent = "投票と場所予想";
+      el.resultCountTitle.textContent = "得票数・役職一覧";
+      el.resultMajorityWord.textContent = spyHunt.location || "-";
+      el.resultMinorityWord.textContent = spyNames;
+      el.minorityPlayerName.textContent = `市民側が疑った人: ${suspectedNames}`;
+      el.winnerText.textContent = getWinnerLabel(result.winner);
+      el.resultSummary.textContent = result.allSpiesFoundByVote
+        ? result.anySpyGuessedLocation
+          ? "投票ではスパイを全員見つけましたが、スパイが場所を当てました。"
+          : "投票でスパイを全員見つけ、場所も守り切りました。"
+        : "投票でスパイを全員見つけられませんでした。";
+
+      el.resultVoteList.replaceChildren();
+      for (const [voterId, vote] of Object.entries(votes)) {
+        if (!players[voterId]) continue;
+        const targetNames = getVoteTargetIds(vote).map((playerId) => getPlayerName(players, playerId)).join("、");
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = `${getPlayerName(players, voterId)} → ${targetNames || "未選択"}`;
+        el.resultVoteList.append(item);
+      }
+
+      const guesses = roomData.spyGuesses || {};
+      const spyIds = spyHunt.spyIds || {};
+      for (const playerId of Object.keys(spyIds)) {
+        const guess = guesses[playerId];
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = guess
+          ? `場所予想: ${getPlayerName(players, playerId)} → ${guess.location}${guess.location === spyHunt.location ? "（正解）" : "（不正解）"}`
+          : `場所予想: ${getPlayerName(players, playerId)} → 未回答`;
+        el.resultVoteList.append(item);
+      }
+
+      if (!el.resultVoteList.children.length) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = "投票と場所予想はありません。";
+        el.resultVoteList.append(item);
+      }
+
+      el.resultCountList.replaceChildren();
+      const countEntries = getPlayerEntries(players)
+        .map(([playerId]) => [playerId, voteCounts[playerId] || 0])
+        .sort(([leftId, leftCount], [rightId, rightCount]) => {
+          if (rightCount !== leftCount) return rightCount - leftCount;
+          return comparePlayersForTie(players, leftId, rightId);
+        });
+      for (const [playerId, count] of countEntries) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = `${getPlayerName(players, playerId)}: ${count}票`;
+        el.resultCountList.append(item);
+      }
+      for (const [playerId, role] of Object.entries(spyHunt.roles || {})) {
+        if (!players[playerId] || spyIds[playerId]) continue;
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = `役職: ${getPlayerName(players, playerId)} = ${role}`;
         el.resultCountList.append(item);
       }
 
@@ -1730,6 +2357,11 @@
     }
 
     async function beginRound(playerIds, roundNumber) {
+      if (isSpyHuntRoom(state.roomData)) {
+        await beginSpyHuntRound(playerIds, roundNumber);
+        return;
+      }
+
       const settings = getRoomSettings(state.roomData);
       const topicPool = getTopicPool(settings.topicGenre);
       if (!topicPool.length) {
@@ -1742,6 +2374,8 @@
         status: "playing",
         roundNumber,
         votes: null,
+        spyGuesses: null,
+        spyHunt: null,
         result: null,
         game: {
           topicSet,
@@ -1749,6 +2383,56 @@
           startedAt: serverTimestamp(),
           timerSeconds: settings.timerSeconds,
           roundNumber
+        }
+      });
+    }
+
+    async function beginSpyHuntRound(playerIds, roundNumber) {
+      const settings = getRoomSettings(state.roomData);
+      const locationPool = getSpyHuntLocationPool(settings.topicGenre);
+      if (!locationPool.length) {
+        throw new Error("選択したジャンルに使える場所がありません。");
+      }
+
+      const locationData = locationPool[randomIndex(locationPool.length)];
+      const shuffledPlayerIds = shuffleArray(playerIds);
+      const spyCount = Math.min(settings.spyCount, getMaxSpyCount(playerIds.length));
+      const spyIds = {};
+      const roles = {};
+
+      for (const playerId of shuffledPlayerIds.slice(0, spyCount)) {
+        spyIds[playerId] = true;
+      }
+
+      const shuffledRoles = shuffleArray(locationData.roles || []);
+      let roleIndex = 0;
+      for (const playerId of playerIds) {
+        if (spyIds[playerId]) continue;
+        roles[playerId] = shuffledRoles[roleIndex % shuffledRoles.length] || "一般人";
+        roleIndex += 1;
+      }
+
+      const candidateLocations = shuffleArray(getSpyHuntCandidateLocations(settings.topicGenre));
+      const questionExamples = shuffleArray([
+        ...(locationData.questions || []),
+        ...SPYHUNT_GENERIC_QUESTIONS
+      ]).slice(0, 8);
+
+      await update(ref(state.db, `rooms/${state.roomCode}`), {
+        status: "playing",
+        roundNumber,
+        votes: null,
+        spyGuesses: null,
+        result: null,
+        game: null,
+        spyHunt: {
+          genre: locationData.genre,
+          location: locationData.location,
+          locationId: locationData.id,
+          roles,
+          spyIds,
+          candidateLocations,
+          questionExamples
         }
       });
     }
@@ -1795,20 +2479,102 @@
       }
     }
 
+    function toggleSpyVoteTarget(targetPlayerId, voteLimit) {
+      if (!state.roomData || state.roomData.votes && state.roomData.votes[state.playerId]) return;
+      if (targetPlayerId === state.playerId) return;
+
+      if (spyVoteSelection.selected.has(targetPlayerId)) {
+        spyVoteSelection.selected.delete(targetPlayerId);
+      } else if (spyVoteSelection.selected.size < voteLimit) {
+        spyVoteSelection.selected.add(targetPlayerId);
+      } else {
+        setStatus(el.votingStatus, `今回は最大${voteLimit}人まで選べます。`, "error");
+        return;
+      }
+
+      renderSpyHuntVotingView(state.roomData);
+    }
+
+    async function submitSpyVote() {
+      if (!state.roomData || !state.roomCode || !isSpyHuntRoom(state.roomData)) return;
+      const targetPlayerIds = Array.from(spyVoteSelection.selected)
+        .filter((playerId) => playerId !== state.playerId && state.roomData.players && state.roomData.players[playerId]);
+
+      if (!targetPlayerIds.length) {
+        setStatus(el.votingStatus, "スパイだと思う人を1人以上選んでください。", "error");
+        return;
+      }
+
+      try {
+        const voteTargets = Object.fromEntries(targetPlayerIds.map((playerId) => [playerId, true]));
+        await set(ref(state.db, `rooms/${state.roomCode}/votes/${state.playerId}`), {
+          targetPlayerIds: voteTargets,
+          votedAt: serverTimestamp()
+        });
+        spyVoteSelection.selected.clear();
+      } catch (error) {
+        setStatus(el.votingStatus, `投票に失敗しました: ${error.message}`, "error");
+      }
+    }
+
+    async function guessSpyLocation(location) {
+      if (!state.roomData || !state.roomCode || !isSpyHuntRoom(state.roomData)) return;
+      const spyIds = state.roomData.spyHunt && state.roomData.spyHunt.spyIds ? state.roomData.spyHunt.spyIds : {};
+      if (!spyIds[state.playerId]) {
+        setStatus(el.spyGuessStatus, "スパイだけが場所を予想できます。", "error");
+        return;
+      }
+
+      try {
+        await set(ref(state.db, `rooms/${state.roomCode}/spyGuesses/${state.playerId}`), {
+          location,
+          guessedAt: serverTimestamp()
+        });
+      } catch (error) {
+        setStatus(el.spyGuessStatus, `場所予想に失敗しました: ${error.message}`, "error");
+      }
+    }
+
     async function showResults() {
       if (!state.roomData || state.roomData.hostId !== state.playerId) return;
 
+      if (isSpyHuntRoom(state.roomData) && normalizeStatus(state.roomData.status) === "voting") {
+        await goToSpyGuess();
+        return;
+      }
+
       el.showResultsButton.disabled = true;
-      setStatus(el.votingStatus, "結果を集計しています...");
+      el.showSpyResultsButton.disabled = true;
+      setStatus(getStatusElementForCurrentPhase(), "結果を集計しています...");
 
       try {
-        const result = buildResult(state.roomData);
+        const result = isSpyHuntRoom(state.roomData)
+          ? buildSpyHuntResult(state.roomData)
+          : buildResult(state.roomData);
         await update(ref(state.db, `rooms/${state.roomCode}`), {
           status: "results",
           result
         });
       } catch (error) {
-        setStatus(el.votingStatus, `結果発表に失敗しました: ${error.message}`, "error");
+        setStatus(getStatusElementForCurrentPhase(), `結果発表に失敗しました: ${error.message}`, "error");
+      } finally {
+        el.showResultsButton.disabled = false;
+        el.showSpyResultsButton.disabled = false;
+      }
+    }
+
+    async function goToSpyGuess() {
+      el.showResultsButton.disabled = true;
+      setStatus(el.votingStatus, "場所当てフェーズに進んでいます...");
+
+      try {
+        await update(ref(state.db, `rooms/${state.roomCode}`), {
+          status: "spyGuess",
+          spyGuesses: null,
+          result: null
+        });
+      } catch (error) {
+        setStatus(el.votingStatus, `場所当てへの移動に失敗しました: ${error.message}`, "error");
       } finally {
         el.showResultsButton.disabled = false;
       }
@@ -1854,7 +2620,9 @@
         await update(ref(state.db, `rooms/${state.roomCode}`), {
           status: "waiting",
           game: null,
+          spyHunt: null,
           votes: null,
+          spyGuesses: null,
           result: null
         });
       } catch (error) {
@@ -1866,13 +2634,16 @@
       if (!state.roomData || state.roomData.hostId !== state.playerId || !state.roomCode) return;
 
       const timerSeconds = Number(el.timerSelect.value) || DEFAULT_TIMER_SECONDS;
-      const topicGenre = getValidTopicGenre(el.topicGenreSelect.value);
+      const gameType = getRoomGameType(state.roomData);
+      const topicGenre = getValidGenreForGame(gameType, el.topicGenreSelect.value);
+      const spyCount = gameType === "spyhunt"
+        ? clampSpyCount(Number(el.spyCountSelect.value), getPlayerEntries(state.roomData.players || {}).length)
+        : null;
 
       try {
-        await update(ref(state.db, `rooms/${state.roomCode}/settings`), {
-          timerSeconds,
-          topicGenre
-        });
+        const settingsUpdate = { timerSeconds, topicGenre };
+        if (gameType === "spyhunt") settingsUpdate.spyCount = spyCount;
+        await update(ref(state.db, `rooms/${state.roomCode}/settings`), settingsUpdate);
       } catch (error) {
         setStatus(el.waitingStatus, `設定を保存できませんでした: ${error.message}`, "error");
       }
@@ -1884,11 +2655,27 @@
 
       try {
         await update(ref(state.db, `rooms/${state.roomCode}`), {
-          hostId: targetPlayerId
+          hostId: targetPlayerId,
+          hostChangedAt: serverTimestamp()
         });
       } catch (error) {
         setStatus(getStatusElementForCurrentPhase(), `ホスト変更に失敗しました: ${error.message}`, "error");
       }
+    }
+
+    function ensureHostExists(roomData) {
+      if (!state.db || !state.roomCode || !roomData || !roomData.players) return;
+      if (roomData.hostId && roomData.players[roomData.hostId]) return;
+
+      const nextHost = getPlayerEntries(roomData.players)[0];
+      if (!nextHost) return;
+
+      update(ref(state.db, `rooms/${state.roomCode}`), {
+        hostId: nextHost[0],
+        hostChangedAt: serverTimestamp()
+      }).catch((error) => {
+        console.warn("host reassignment failed:", error);
+      });
     }
 
     async function leaveRoom() {
@@ -1911,6 +2698,7 @@
           };
           if (roomData.hostId === state.playerId) {
             updates.hostId = remainingEntries[0][0];
+            updates.hostChangedAt = serverTimestamp();
           }
           await update(ref(state.db, `rooms/${roomCode}`), updates);
         }
@@ -1978,18 +2766,41 @@
       return code;
     }
 
+    function renderSettingsOptions() {
+      renderTopicGenreOptions();
+      renderSpyCountOptions(state.roomData && state.roomData.players ? state.roomData.players : {}, 1);
+    }
+
     function renderTopicGenreOptions() {
-      const selectedGenre = normalizeTopicGenre(el.topicGenreSelect.value);
+      const gameType = getValidGameType(state.selectedGameType);
+      const selectedGenre = getValidGenreForGame(gameType, el.topicGenreSelect.value);
+      const genreOptions = gameType === "spyhunt" ? spyHuntGenres : topicGenres;
       el.topicGenreSelect.replaceChildren();
 
-      for (const [value, label] of Object.entries(topicGenres)) {
+      for (const [value, label] of Object.entries(genreOptions)) {
         const option = document.createElement("option");
         option.value = value;
         option.textContent = label;
         el.topicGenreSelect.append(option);
       }
 
-      el.topicGenreSelect.value = getValidTopicGenre(selectedGenre);
+      el.topicGenreSelect.value = getValidGenreForGame(gameType, selectedGenre);
+    }
+
+    function renderSpyCountOptions(players, selectedSpyCount) {
+      const playerCount = getPlayerEntries(players).length;
+      const maxSpyCount = getMaxSpyCount(playerCount);
+      const safeSpyCount = clampSpyCount(selectedSpyCount, playerCount);
+      el.spyCountSelect.replaceChildren();
+
+      for (let count = 1; count <= maxSpyCount; count += 1) {
+        const option = document.createElement("option");
+        option.value = String(count);
+        option.textContent = `${count}人`;
+        el.spyCountSelect.append(option);
+      }
+
+      el.spyCountSelect.value = String(safeSpyCount);
     }
 
     function buildTopicGenres(source) {
@@ -2036,17 +2847,62 @@
 
     function getRoomSettings(roomData) {
       const settings = roomData && roomData.settings ? roomData.settings : {};
+      const gameType = getRoomGameType(roomData);
       const timerSeconds = [60, 180, 300, 600].includes(Number(settings.timerSeconds))
         ? Number(settings.timerSeconds)
         : DEFAULT_TIMER_SECONDS;
-      const topicGenre = getValidTopicGenre(settings.topicGenre);
-      return { timerSeconds, topicGenre };
+      const topicGenre = getValidGenreForGame(gameType, settings.topicGenre);
+      const spyCount = gameType === "spyhunt"
+        ? clampSpyCount(settings.spyCount, getPlayerEntries(roomData && roomData.players ? roomData.players : {}).length)
+        : 1;
+      return { timerSeconds, topicGenre, spyCount };
+    }
+
+    function getDefaultSettingsForGame(gameType) {
+      if (gameType === "spyhunt") {
+        return {
+          timerSeconds: DEFAULT_TIMER_SECONDS,
+          topicGenre: "日常",
+          spyCount: 1
+        };
+      }
+
+      return {
+        timerSeconds: DEFAULT_TIMER_SECONDS,
+        topicGenre: "all"
+      };
+    }
+
+    function getValidGameType(gameType) {
+      const normalized = String(gameType || "").trim();
+      return validGameTypes.includes(normalized) ? normalized : "wordwolf";
+    }
+
+    function getRoomGameType(roomData) {
+      return getValidGameType(roomData && roomData.gameType ? roomData.gameType : "wordwolf");
+    }
+
+    function isSpyHuntRoom(roomData) {
+      return getRoomGameType(roomData) === "spyhunt";
+    }
+
+    function getValidGenreForGame(gameType, topicGenre) {
+      if (gameType === "spyhunt") {
+        return getValidSpyHuntGenre(topicGenre);
+      }
+      return getValidTopicGenre(topicGenre);
     }
 
     function getValidTopicGenre(topicGenre) {
       const normalizedGenre = normalizeTopicGenre(topicGenre);
       if (topicGenres[normalizedGenre]) return normalizedGenre;
       return getDefaultTopicGenre();
+    }
+
+    function getValidSpyHuntGenre(topicGenre) {
+      const genre = String(topicGenre || "");
+      if (spyHuntGenres[genre]) return genre;
+      return "all";
     }
 
     function normalizeTopicGenre(topicGenre) {
@@ -2069,10 +2925,11 @@
     }
 
     function getPlayerEntries(players) {
-      return Object.entries(players || {}).sort(([, a], [, b]) => {
+      return Object.entries(players || {}).sort(([leftId, a], [rightId, b]) => {
         const left = Number(a.joinedAt) || 0;
         const right = Number(b.joinedAt) || 0;
-        return left - right;
+        if (left !== right) return left - right;
+        return leftId.localeCompare(rightId);
       });
     }
 
@@ -2093,6 +2950,32 @@
         counts[vote.targetPlayerId] = (counts[vote.targetPlayerId] || 0) + 1;
       }
       return counts;
+    }
+
+    function countSpyVotes(players, votes) {
+      const counts = {};
+      for (const playerId of Object.keys(players || {})) {
+        counts[playerId] = 0;
+      }
+      for (const [voterId, vote] of Object.entries(votes || {})) {
+        if (!players[voterId]) continue;
+        for (const targetPlayerId of getVoteTargetIds(vote)) {
+          if (!players[targetPlayerId]) continue;
+          counts[targetPlayerId] = (counts[targetPlayerId] || 0) + 1;
+        }
+      }
+      return counts;
+    }
+
+    function getVoteTargetIds(vote) {
+      if (!vote) return [];
+      if (vote.targetPlayerId) return [vote.targetPlayerId];
+      if (vote.targetPlayerIds && typeof vote.targetPlayerIds === "object") {
+        return Object.entries(vote.targetPlayerIds)
+          .filter(([, selected]) => Boolean(selected))
+          .map(([playerId]) => playerId);
+      }
+      return [];
     }
 
     function buildResult(roomData) {
@@ -2120,14 +3003,77 @@
       };
     }
 
+    function buildSpyHuntResult(roomData) {
+      const players = roomData.players || {};
+      const votes = roomData.votes || {};
+      const spyHunt = roomData.spyHunt || {};
+      const spyIds = spyHunt.spyIds || {};
+      const settings = getRoomSettings(roomData);
+      const counts = countSpyVotes(players, votes);
+      const sortedEntries = getPlayerEntries(players)
+        .map(([playerId]) => [playerId, counts[playerId] || 0])
+        .sort(([leftId, leftCount], [rightId, rightCount]) => {
+          if (rightCount !== leftCount) return rightCount - leftCount;
+          return comparePlayersForTie(players, leftId, rightId);
+        });
+      const suspectedPlayerIds = sortedEntries.slice(0, settings.spyCount).map(([playerId]) => playerId);
+      const activeSpyIds = Object.keys(spyIds).filter((playerId) => players[playerId]);
+      const allSpiesFoundByVote = activeSpyIds.every((playerId) => suspectedPlayerIds.includes(playerId));
+      const guesses = roomData.spyGuesses || {};
+      const anySpyGuessedLocation = Object.entries(guesses)
+        .some(([playerId, guess]) => spyIds[playerId] && guess && guess.location === spyHunt.location);
+      const winner = !allSpiesFoundByVote || anySpyGuessedLocation ? "spies" : "citizens";
+
+      return {
+        suspectedPlayerIds,
+        voteCounts: counts,
+        allSpiesFoundByVote,
+        anySpyGuessedLocation,
+        winner,
+        revealedAt: serverTimestamp()
+      };
+    }
+
+    function comparePlayersForTie(players, leftId, rightId) {
+      const leftJoinedAt = Number(players[leftId] && players[leftId].joinedAt) || 0;
+      const rightJoinedAt = Number(players[rightId] && players[rightId].joinedAt) || 0;
+      if (leftJoinedAt !== rightJoinedAt) return leftJoinedAt - rightJoinedAt;
+      return leftId.localeCompare(rightId);
+    }
+
     function getWinnerLabel(winner) {
       if (winner === "majority" || winner === "citizen") return "市民勝利";
       if (winner === "minority" || winner === "werewolf") return "人狼勝利";
+      if (winner === "citizens") return "市民側勝利";
+      if (winner === "spies") return "スパイ側勝利";
       return "引き分け";
     }
 
     function getGenreLabel(topicGenre) {
       return topicGenres[getValidTopicGenre(topicGenre)] || topicGenres[getDefaultTopicGenre()] || "すべて";
+    }
+
+    function getSpyHuntGenreLabel(topicGenre) {
+      return spyHuntGenres[getValidSpyHuntGenre(topicGenre)] || "すべて";
+    }
+
+    function buildSettingsSummary(roomData, settings) {
+      const hostNote = roomData && roomData.hostChangedAt ? " / ホスト変更済み" : "";
+      if (isSpyHuntRoom(roomData)) {
+        return `設定: ${formatSeconds(settings.timerSeconds)} / ${getSpyHuntGenreLabel(settings.topicGenre)} / スパイ${settings.spyCount}人 / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
+      }
+      return `設定: ${formatSeconds(settings.timerSeconds)} / ${getGenreLabel(settings.topicGenre)} / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
+    }
+
+    function getMaxSpyCount(playerCount) {
+      if (playerCount >= 9) return Math.min(3, Math.floor(playerCount / 3));
+      if (playerCount >= 6) return 2;
+      return 1;
+    }
+
+    function clampSpyCount(value, playerCount) {
+      const count = Number(value) || 1;
+      return Math.max(1, Math.min(count, getMaxSpyCount(playerCount)));
     }
 
     function formatSeconds(totalSeconds) {
@@ -2238,12 +3184,52 @@
     }
 
     function randomIndex(length) {
+      if (length <= 0) return 0;
       if (window.crypto && window.crypto.getRandomValues) {
         const values = new Uint32Array(1);
         window.crypto.getRandomValues(values);
         return values[0] % length;
       }
       return Math.floor(Math.random() * length);
+    }
+
+    function shuffleArray(items) {
+      const result = Array.from(items || []);
+      for (let index = result.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomIndex(index + 1);
+        [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+      }
+      return result;
+    }
+
+    function shuffleArrayWithSeed(items, seed) {
+      const result = Array.from(items || []);
+      let currentSeed = Number(seed) || 1;
+      for (let index = result.length - 1; index > 0; index -= 1) {
+        currentSeed = (currentSeed * 1664525 + 1013904223) % 4294967296;
+        const swapIndex = currentSeed % (index + 1);
+        [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+      }
+      return result;
+    }
+
+    function getSpyHuntLocationPool(topicGenre) {
+      const safeGenre = getValidSpyHuntGenre(topicGenre);
+      return safeGenre === "all"
+        ? SPYHUNT_LOCATIONS
+        : SPYHUNT_LOCATIONS.filter((location) => location.genre === safeGenre);
+    }
+
+    function getSpyHuntCandidateLocations(topicGenre) {
+      return getSpyHuntLocationPool(topicGenre).map((location) => location.location);
+    }
+
+    function refreshQuestionExamples() {
+      spyQuestionState.seed = randomIndex(100000);
+      writeStorage(questionSeedStorageKey, String(spyQuestionState.seed));
+      if (state.roomData) {
+        renderQuestionExamples(state.roomData);
+      }
     }
 
     function getRoomCodeFromUrl() {
@@ -2268,6 +3254,31 @@
       return `${PUBLIC_BASE_URL}?room=${encodeURIComponent(roomCode)}`;
     }
 
+    function selectGame(gameType) {
+      state.selectedGameType = getValidGameType(gameType);
+      writeStorage(storageKeys.selectedGameType, state.selectedGameType);
+      applySelectedGameType(state.selectedGameType);
+      showScreen("wordwolf");
+    }
+
+    function applySelectedGameType(gameType, roomData = null) {
+      const safeGameType = getValidGameType(gameType);
+      const labels = gameLabels[safeGameType] || gameLabels.wordwolf;
+      state.selectedGameType = safeGameType;
+      writeStorage(storageKeys.selectedGameType, safeGameType);
+      el.wordwolfScreen.classList.toggle("spyhunt-theme", safeGameType === "spyhunt");
+      document.querySelector("#wordwolf-title").textContent = labels.title;
+      el.topicGenreLabel.textContent = safeGameType === "spyhunt" ? "場所ジャンル" : "お題ジャンル";
+      el.spyCountSetting.classList.toggle("is-hidden", safeGameType !== "spyhunt");
+      el.startGameButton.textContent = `${labels.title}を開始`;
+      renderTopicGenreOptions();
+      if (roomData) {
+        const settings = getRoomSettings(roomData);
+        el.topicGenreSelect.value = settings.topicGenre;
+        renderSpyCountOptions(roomData.players || {}, settings.spyCount);
+      }
+    }
+
     function showScreen(screenName) {
       el.homeScreen.classList.toggle("is-active", screenName === "home");
       el.wordwolfScreen.classList.toggle("is-active", screenName === "wordwolf");
@@ -2278,6 +3289,7 @@
       el.waitingView.classList.toggle("is-active", viewName === "waiting");
       el.playingView.classList.toggle("is-active", viewName === "playing");
       el.votingView.classList.toggle("is-active", viewName === "voting");
+      el.spyGuessView.classList.toggle("is-active", viewName === "spyGuess");
       el.resultsView.classList.toggle("is-active", viewName === "results");
     }
 
@@ -2287,6 +3299,7 @@
       el.guestWaitingMessage.classList.toggle("is-visible", !isHost && status === "waiting");
       el.hostPlayingControls.classList.toggle("is-visible", isHost && status === "playing");
       el.hostVotingControls.classList.toggle("is-visible", isHost && status === "voting");
+      el.hostSpyGuessControls.classList.toggle("is-visible", isHost && status === "spyGuess");
       el.hostResultsControls.classList.toggle("is-visible", isHost && status === "results");
     }
 
@@ -2294,6 +3307,7 @@
       const status = normalizeStatus(state.roomData && state.roomData.status);
       if (status === "playing") return el.playingStatus;
       if (status === "voting") return el.votingStatus;
+      if (status === "spyGuess") return el.spyGuessStatus;
       if (status === "results") return el.resultsStatus;
       return el.waitingStatus;
     }
