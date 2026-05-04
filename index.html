@@ -44,7 +44,8 @@
     }
 
     button,
-    input {
+    input,
+    select {
       font: inherit;
     }
 
@@ -70,7 +71,8 @@
       transform: none;
     }
 
-    input {
+    input,
+    select {
       width: 100%;
       min-height: 48px;
       border: 1px solid var(--line);
@@ -82,6 +84,7 @@
     }
 
     input:focus,
+    select:focus,
     button:focus-visible {
       outline: 3px solid rgba(20, 108, 95, 0.24);
       outline-offset: 2px;
@@ -190,6 +193,17 @@
       background: var(--danger);
     }
 
+    .secondary-button {
+      background: var(--accent);
+      color: #3a2600;
+    }
+
+    .compact-button {
+      min-height: 38px;
+      padding: 8px 10px;
+      font-size: 0.86rem;
+    }
+
     .view {
       display: none;
       padding: 18px 16px 20px;
@@ -213,6 +227,22 @@
     .button-row {
       display: grid;
       gap: 10px;
+    }
+
+    .setting-grid {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .phase-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
     }
 
     .room-code {
@@ -267,6 +297,19 @@
       background: #ffffff;
     }
 
+    .player-main {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .player-actions {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 7px;
+    }
+
     .badge {
       flex: 0 0 auto;
       border-radius: 999px;
@@ -300,6 +343,63 @@
       font-weight: 900;
       letter-spacing: 0;
       line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .timer-box {
+      display: grid;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .timer-display {
+      font-size: clamp(2.5rem, 16vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--primary-dark);
+      letter-spacing: 0;
+    }
+
+    .vote-list,
+    .result-list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .vote-card,
+    .result-item {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: #ffffff;
+    }
+
+    .result-word-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .result-word {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .result-word strong {
+      display: block;
+      font-size: 1.4rem;
       overflow-wrap: anywhere;
     }
 
@@ -377,7 +477,13 @@
     <section id="wordwolf-screen" class="screen" aria-labelledby="wordwolf-title">
       <div class="play-surface">
         <div class="play-header">
-          <h2 id="wordwolf-title" class="view-title">同期ワードウルフ</h2>
+          <div>
+            <h2 id="wordwolf-title" class="view-title">同期ワードウルフ</h2>
+            <div class="phase-row">
+              <span id="phase-label" class="badge">待機中</span>
+              <span id="round-label" class="hint">Round 1</span>
+            </div>
+          </div>
           <button id="back-home-button" class="ghost-button" type="button">ゲーム一覧</button>
         </div>
 
@@ -433,12 +539,38 @@
               <ul id="waiting-player-list" class="player-list"></ul>
             </div>
 
+            <div id="host-settings-controls" class="host-only setting-grid">
+              <label>
+                話し合い時間
+                <select id="timer-select">
+                  <option value="60">1分</option>
+                  <option value="180" selected>3分</option>
+                  <option value="300">5分</option>
+                  <option value="600">10分</option>
+                </select>
+              </label>
+              <label>
+                お題ジャンル
+                <select id="topic-genre-select">
+                  <option value="all">すべて</option>
+                  <option value="food">食べ物</option>
+                  <option value="school">学校</option>
+                  <option value="play">遊び</option>
+                  <option value="life">生活</option>
+                  <option value="anime_game">アニメ・ゲーム</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="settings-summary" class="status">設定を読み込み中です。</div>
+
             <div id="host-waiting-controls" class="host-only">
               <button id="start-game-button" type="button">ゲーム開始</button>
             </div>
 
             <div id="guest-waiting-message" class="guest-only status">ホストが開始するまで待ってください。</div>
             <div id="waiting-status" class="status" role="status" aria-live="polite"></div>
+            <button class="leave-room-button ghost-button" type="button">部屋を退出</button>
           </div>
         </div>
 
@@ -450,7 +582,11 @@
               <strong>他の人に見せないでください</strong>
             </div>
 
-            <div class="status">話し合いタイム</div>
+            <div class="timer-box">
+              <span class="hint">残り時間</span>
+              <div id="timer-display" class="timer-display">--:--</div>
+              <div id="timer-status" class="hint">話し合いタイム</div>
+            </div>
 
             <div>
               <h3 class="view-title">参加者</h3>
@@ -458,10 +594,91 @@
             </div>
 
             <div id="host-playing-controls" class="host-only">
-              <button id="reset-room-button" class="danger-button" type="button">部屋をリセット</button>
+              <div class="button-row">
+                <button id="go-voting-button" class="secondary-button" type="button">投票へ進む</button>
+                <button id="reset-room-button" class="danger-button" type="button">部屋をリセット</button>
+              </div>
             </div>
 
             <div id="playing-status" class="status" role="status" aria-live="polite"></div>
+            <button class="leave-room-button ghost-button" type="button">部屋を退出</button>
+          </div>
+        </div>
+
+        <div id="voting-view" class="view">
+          <div class="stack">
+            <div class="status">投票中です。少数派だと思う人を選んでください。</div>
+
+            <div>
+              <h3 class="view-title">投票</h3>
+              <p id="vote-progress" class="hint">0 / 0 投票済み</p>
+              <ul id="vote-target-list" class="vote-list"></ul>
+            </div>
+
+            <div id="my-vote-status" class="status" role="status" aria-live="polite"></div>
+
+            <div>
+              <h3 class="view-title">参加者</h3>
+              <ul id="voting-player-list" class="player-list"></ul>
+            </div>
+
+            <div id="host-voting-controls" class="host-only">
+              <div class="button-row">
+                <button id="show-results-button" class="secondary-button" type="button">結果発表</button>
+              </div>
+              <div id="voting-host-note" class="status"></div>
+            </div>
+
+            <div id="voting-status" class="status" role="status" aria-live="polite"></div>
+            <button class="leave-room-button ghost-button" type="button">部屋を退出</button>
+          </div>
+        </div>
+
+        <div id="results-view" class="view">
+          <div class="stack">
+            <div class="status">結果発表中</div>
+
+            <div class="result-word-grid">
+              <div class="result-word">
+                <span class="hint">多数派ワード</span>
+                <strong id="result-majority-word">-</strong>
+              </div>
+              <div class="result-word">
+                <span class="hint">少数派ワード</span>
+                <strong id="result-minority-word">-</strong>
+              </div>
+            </div>
+
+            <div id="winner-box" class="topic-box">
+              <p class="topic-label">勝敗</p>
+              <p id="winner-text" class="topic-word">-</p>
+              <strong id="minority-player-name">少数派: -</strong>
+            </div>
+
+            <div>
+              <h3 class="view-title">投票先</h3>
+              <ul id="result-vote-list" class="result-list"></ul>
+            </div>
+
+            <div>
+              <h3 class="view-title">得票数</h3>
+              <ul id="result-count-list" class="result-list"></ul>
+            </div>
+
+            <div>
+              <h3 class="view-title">参加者</h3>
+              <ul id="results-player-list" class="player-list"></ul>
+            </div>
+
+            <div id="host-results-controls" class="host-only">
+              <div class="button-row">
+                <button id="next-round-button" class="secondary-button" type="button">次のラウンド</button>
+                <button id="back-to-waiting-button" type="button">待機に戻る</button>
+              </div>
+            </div>
+
+            <div id="results-status" class="status" role="status" aria-live="polite"></div>
+            <button class="leave-room-button ghost-button" type="button">部屋を退出</button>
           </div>
         </div>
       </div>
@@ -486,6 +703,23 @@
     const PUBLIC_BASE_URL = "https://LegendManbou.github.io/party-game-web/";
     const ROOM_CODE_LENGTH = 5;
     const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const DEFAULT_TIMER_SECONDS = 180;
+
+    const topicGenres = {
+      all: "すべて",
+      food: "食べ物",
+      school: "学校",
+      play: "遊び",
+      life: "生活",
+      anime_game: "アニメ・ゲーム"
+    };
+
+    const phaseLabels = {
+      waiting: "待機中",
+      playing: "話し合い中",
+      voting: "投票中",
+      results: "結果発表中"
+    };
 
     // Later games can be added here and connected to cards in the game list.
     const games = [
@@ -493,14 +727,31 @@
     ];
 
     const topicSets = [
-      { majority: "犬", minority: "猫" },
-      { majority: "カレー", minority: "ラーメン" },
-      { majority: "海", minority: "プール" },
-      { majority: "映画館", minority: "カラオケ" },
-      { majority: "夏", minority: "冬" },
-      { majority: "コーヒー", minority: "紅茶" },
-      { majority: "電車", minority: "バス" },
-      { majority: "朝ごはん", minority: "夜食" }
+      { genre: "food", majority: "カレー", minority: "ラーメン" },
+      { genre: "food", majority: "寿司", minority: "焼肉" },
+      { genre: "food", majority: "コーヒー", minority: "紅茶" },
+      { genre: "food", majority: "ハンバーガー", minority: "ピザ" },
+      { genre: "food", majority: "アイス", minority: "プリン" },
+      { genre: "school", majority: "数学", minority: "理科" },
+      { genre: "school", majority: "給食", minority: "弁当" },
+      { genre: "school", majority: "体育館", minority: "運動場" },
+      { genre: "school", majority: "テスト", minority: "宿題" },
+      { genre: "school", majority: "先生", minority: "先輩" },
+      { genre: "play", majority: "海", minority: "プール" },
+      { genre: "play", majority: "映画館", minority: "カラオケ" },
+      { genre: "play", majority: "遊園地", minority: "水族館" },
+      { genre: "play", majority: "ボウリング", minority: "ダーツ" },
+      { genre: "play", majority: "キャンプ", minority: "旅行" },
+      { genre: "life", majority: "犬", minority: "猫" },
+      { genre: "life", majority: "夏", minority: "冬" },
+      { genre: "life", majority: "電車", minority: "バス" },
+      { genre: "life", majority: "朝ごはん", minority: "夜食" },
+      { genre: "life", majority: "コンビニ", minority: "スーパー" },
+      { genre: "anime_game", majority: "勇者", minority: "魔王" },
+      { genre: "anime_game", majority: "ポケモン", minority: "デジモン" },
+      { genre: "anime_game", majority: "マリオ", minority: "ソニック" },
+      { genre: "anime_game", majority: "アニメ", minority: "漫画" },
+      { genre: "anime_game", majority: "RPG", minority: "アクションゲーム" }
     ];
 
     const storageKeys = {
@@ -516,7 +767,9 @@
       roomCode: "",
       playerName: "",
       roomData: null,
-      roomUnsubscribe: null
+      roomUnsubscribe: null,
+      timerInterval: null,
+      timerKey: ""
     };
 
     const el = {
@@ -525,27 +778,58 @@
       setupView: document.querySelector("#setup-view"),
       waitingView: document.querySelector("#waiting-view"),
       playingView: document.querySelector("#playing-view"),
+      votingView: document.querySelector("#voting-view"),
+      resultsView: document.querySelector("#results-view"),
       openWordwolfButton: document.querySelector("#open-wordwolf-button"),
       backHomeButton: document.querySelector("#back-home-button"),
       nicknameInput: document.querySelector("#nickname-input"),
       roomCodeInput: document.querySelector("#room-code-input"),
+      timerSelect: document.querySelector("#timer-select"),
+      topicGenreSelect: document.querySelector("#topic-genre-select"),
       createRoomButton: document.querySelector("#create-room-button"),
       joinRoomButton: document.querySelector("#join-room-button"),
       copyUrlButton: document.querySelector("#copy-url-button"),
       startGameButton: document.querySelector("#start-game-button"),
+      goVotingButton: document.querySelector("#go-voting-button"),
+      showResultsButton: document.querySelector("#show-results-button"),
+      nextRoundButton: document.querySelector("#next-round-button"),
+      backToWaitingButton: document.querySelector("#back-to-waiting-button"),
       resetRoomButton: document.querySelector("#reset-room-button"),
+      leaveRoomButtons: document.querySelectorAll(".leave-room-button"),
       setupStatus: document.querySelector("#setup-status"),
       waitingStatus: document.querySelector("#waiting-status"),
       playingStatus: document.querySelector("#playing-status"),
+      votingStatus: document.querySelector("#voting-status"),
+      resultsStatus: document.querySelector("#results-status"),
+      myVoteStatus: document.querySelector("#my-vote-status"),
+      votingHostNote: document.querySelector("#voting-host-note"),
+      phaseLabel: document.querySelector("#phase-label"),
+      roundLabel: document.querySelector("#round-label"),
       waitingRoomCode: document.querySelector("#waiting-room-code"),
       waitingPlayerName: document.querySelector("#waiting-player-name"),
       shareUrl: document.querySelector("#share-url"),
+      settingsSummary: document.querySelector("#settings-summary"),
+      timerDisplay: document.querySelector("#timer-display"),
+      timerStatus: document.querySelector("#timer-status"),
       waitingPlayerList: document.querySelector("#waiting-player-list"),
       playingPlayerList: document.querySelector("#playing-player-list"),
+      votingPlayerList: document.querySelector("#voting-player-list"),
+      resultsPlayerList: document.querySelector("#results-player-list"),
+      voteTargetList: document.querySelector("#vote-target-list"),
+      voteProgress: document.querySelector("#vote-progress"),
+      resultVoteList: document.querySelector("#result-vote-list"),
+      resultCountList: document.querySelector("#result-count-list"),
       hostWaitingControls: document.querySelector("#host-waiting-controls"),
+      hostSettingsControls: document.querySelector("#host-settings-controls"),
       guestWaitingMessage: document.querySelector("#guest-waiting-message"),
       hostPlayingControls: document.querySelector("#host-playing-controls"),
-      myTopic: document.querySelector("#my-topic")
+      hostVotingControls: document.querySelector("#host-voting-controls"),
+      hostResultsControls: document.querySelector("#host-results-controls"),
+      myTopic: document.querySelector("#my-topic"),
+      resultMajorityWord: document.querySelector("#result-majority-word"),
+      resultMinorityWord: document.querySelector("#result-minority-word"),
+      minorityPlayerName: document.querySelector("#minority-player-name"),
+      winnerText: document.querySelector("#winner-text")
     };
 
     boot();
@@ -576,7 +860,14 @@
       el.joinRoomButton.addEventListener("click", joinRoom);
       el.copyUrlButton.addEventListener("click", copyShareUrl);
       el.startGameButton.addEventListener("click", startGame);
+      el.goVotingButton.addEventListener("click", goToVoting);
+      el.showResultsButton.addEventListener("click", showResults);
+      el.nextRoundButton.addEventListener("click", startNextRound);
+      el.backToWaitingButton.addEventListener("click", backToWaiting);
       el.resetRoomButton.addEventListener("click", resetRoom);
+      el.leaveRoomButtons.forEach((button) => button.addEventListener("click", leaveRoom));
+      el.timerSelect.addEventListener("change", saveSettings);
+      el.topicGenreSelect.addEventListener("change", saveSettings);
       el.roomCodeInput.addEventListener("input", () => {
         el.roomCodeInput.value = normalizeRoomCode(el.roomCodeInput.value);
       });
@@ -623,13 +914,20 @@
           createdAt: serverTimestamp(),
           hostId: state.playerId,
           status: "waiting",
+          roundNumber: 1,
+          settings: {
+            timerSeconds: DEFAULT_TIMER_SECONDS,
+            topicGenre: "all"
+          },
           players: {
             [state.playerId]: {
               name: nickname,
               joinedAt: serverTimestamp()
             }
           },
-          game: null
+          game: null,
+          votes: null,
+          result: null
         });
 
         enterRoom(roomCode, nickname);
@@ -744,18 +1042,34 @@
 
       state.playerName = sanitizeNickname(currentPlayer.name || state.playerName);
       const isHost = roomData.hostId === state.playerId;
-      const status = roomData.status || "waiting";
+      const status = normalizeStatus(roomData.status);
+      const settings = getRoomSettings(roomData);
+      const roundNumber = getRoundNumber(roomData);
 
+      el.phaseLabel.textContent = phaseLabels[status] || phaseLabels.waiting;
+      el.roundLabel.textContent = `Round ${roundNumber}`;
       el.waitingRoomCode.textContent = state.roomCode;
       el.waitingPlayerName.textContent = state.playerName;
       el.shareUrl.textContent = getShareUrl(state.roomCode);
-      renderPlayerList(el.waitingPlayerList, players, roomData.hostId);
-      renderPlayerList(el.playingPlayerList, players, roomData.hostId);
+      el.timerSelect.value = String(settings.timerSeconds);
+      el.topicGenreSelect.value = settings.topicGenre;
+      el.settingsSummary.textContent = `設定: ${formatSeconds(settings.timerSeconds)} / ${getGenreLabel(settings.topicGenre)}`;
+      renderPlayerList(el.waitingPlayerList, players, roomData.hostId, isHost);
+      renderPlayerList(el.playingPlayerList, players, roomData.hostId, isHost);
+      renderPlayerList(el.votingPlayerList, players, roomData.hostId, isHost);
+      renderPlayerList(el.resultsPlayerList, players, roomData.hostId, isHost);
       toggleHostControls(isHost, status);
 
       if (status === "playing") {
         renderPlayingView(roomData);
+      } else if (status === "voting") {
+        stopTimer();
+        renderVotingView(roomData);
+      } else if (status === "results") {
+        stopTimer();
+        renderResultsView(roomData);
       } else {
+        stopTimer();
         showWordwolfView("waiting");
         setStatus(el.waitingStatus, "");
       }
@@ -773,15 +1087,99 @@
 
       showWordwolfView("playing");
       setStatus(el.playingStatus, "");
+      startTimer(roomData);
     }
 
-    function renderPlayerList(listElement, players, hostId) {
-      const entries = Object.entries(players).sort(([, a], [, b]) => {
-        const left = a.joinedAt || 0;
-        const right = b.joinedAt || 0;
-        return left - right;
-      });
+    function renderVotingView(roomData) {
+      const players = roomData.players || {};
+      const votes = roomData.votes || {};
+      const entries = getPlayerEntries(players);
+      const activePlayerIds = entries.map(([playerId]) => playerId);
+      const votedCount = activePlayerIds.filter((playerId) => votes[playerId]).length;
+      const myVote = votes[state.playerId];
 
+      el.voteProgress.textContent = `${votedCount} / ${activePlayerIds.length} 投票済み`;
+      el.voteTargetList.replaceChildren();
+
+      if (myVote) {
+        setStatus(el.myVoteStatus, `あなたの投票先: ${getPlayerName(players, myVote.targetPlayerId)}`, "ok");
+      } else {
+        setStatus(el.myVoteStatus, "まだ投票していません。");
+      }
+
+      for (const [playerId, player] of entries) {
+        const item = document.createElement("li");
+        item.className = "vote-card";
+
+        const name = document.createElement("strong");
+        name.textContent = sanitizeNickname(player.name) || "名前なし";
+        item.append(name);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = playerId === state.playerId ? "自分には投票できません" : "この人に投票";
+        button.disabled = Boolean(myVote) || playerId === state.playerId;
+        button.addEventListener("click", () => voteForPlayer(playerId));
+        item.append(button);
+
+        el.voteTargetList.append(item);
+      }
+
+      if (roomData.hostId === state.playerId) {
+        const allVoted = votedCount >= activePlayerIds.length;
+        setStatus(
+          el.votingHostNote,
+          allVoted ? "全員が投票しました。結果発表できます。" : "全員投票前でも結果発表できますが、未投票者は集計されません。",
+          allVoted ? "ok" : "info"
+        );
+      }
+
+      showWordwolfView("voting");
+      setStatus(el.votingStatus, "");
+    }
+
+    function renderResultsView(roomData) {
+      const players = roomData.players || {};
+      const votes = roomData.votes || {};
+      const game = roomData.game || {};
+      const topicSet = game.topicSet || {};
+      const result = roomData.result || buildResult(roomData);
+      const voteCounts = countVotes(players, votes);
+
+      el.resultMajorityWord.textContent = topicSet.majority || "-";
+      el.resultMinorityWord.textContent = topicSet.minority || "-";
+      el.minorityPlayerName.textContent = `少数派: ${getPlayerName(players, game.minorityPlayerId)}`;
+      el.winnerText.textContent = getWinnerLabel(result.winner);
+
+      el.resultVoteList.replaceChildren();
+      for (const [voterId, vote] of Object.entries(votes)) {
+        if (!players[voterId]) continue;
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = `${getPlayerName(players, voterId)} → ${getPlayerName(players, vote.targetPlayerId)}`;
+        el.resultVoteList.append(item);
+      }
+      if (!el.resultVoteList.children.length) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = "投票はありません。";
+        el.resultVoteList.append(item);
+      }
+
+      el.resultCountList.replaceChildren();
+      for (const [playerId, count] of Object.entries(voteCounts)) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = `${getPlayerName(players, playerId)}: ${count}票`;
+        el.resultCountList.append(item);
+      }
+
+      showWordwolfView("results");
+      setStatus(el.resultsStatus, "");
+    }
+
+    function renderPlayerList(listElement, players, hostId, canTransferHost = false) {
+      const entries = getPlayerEntries(players);
       listElement.replaceChildren();
 
       for (const [playerId, player] of entries) {
@@ -789,13 +1187,28 @@
         item.className = "player-item";
 
         const name = document.createElement("span");
+        name.className = "player-main";
         name.textContent = sanitizeNickname(player.name) || "名前なし";
+
+        const actions = document.createElement("span");
+        actions.className = "player-actions";
 
         const label = document.createElement("span");
         label.className = "badge";
         label.textContent = playerId === hostId ? "HOST" : "PLAYER";
 
-        item.append(name, label);
+        actions.append(label);
+
+        if (canTransferHost && playerId !== state.playerId) {
+          const hostButton = document.createElement("button");
+          hostButton.type = "button";
+          hostButton.className = "compact-button ghost-button";
+          hostButton.textContent = "ホストにする";
+          hostButton.addEventListener("click", () => transferHost(playerId));
+          actions.append(hostButton);
+        }
+
+        item.append(name, actions);
         listElement.append(item);
       }
     }
@@ -803,7 +1216,7 @@
     async function startGame() {
       if (!state.roomData || state.roomData.hostId !== state.playerId) return;
 
-      const playerIds = Object.keys(state.roomData.players || {});
+      const playerIds = getPlayerEntries(state.roomData.players || {}).map(([playerId]) => playerId);
       if (playerIds.length < 3) {
         setStatus(el.waitingStatus, "3人以上で開始してください。", "error");
         return;
@@ -813,17 +1226,7 @@
       setStatus(el.waitingStatus, "ゲームを開始しています...");
 
       try {
-        const topicSet = topicSets[randomIndex(topicSets.length)];
-        const minorityPlayerId = playerIds[randomIndex(playerIds.length)];
-
-        await update(ref(state.db, `rooms/${state.roomCode}`), {
-          status: "playing",
-          game: {
-            topicSet,
-            minorityPlayerId,
-            startedAt: serverTimestamp()
-          }
-        });
+        await beginRound(playerIds, getRoundNumber(state.roomData));
       } catch (error) {
         setStatus(el.waitingStatus, `開始に失敗しました: ${error.message}`, "error");
       } finally {
@@ -831,22 +1234,205 @@
       }
     }
 
+    async function beginRound(playerIds, roundNumber) {
+      const settings = getRoomSettings(state.roomData);
+      const topicPool = getTopicPool(settings.topicGenre);
+      const topicSet = topicPool[randomIndex(topicPool.length)];
+      const minorityPlayerId = playerIds[randomIndex(playerIds.length)];
+
+      await update(ref(state.db, `rooms/${state.roomCode}`), {
+        status: "playing",
+        roundNumber,
+        votes: null,
+        result: null,
+        game: {
+          topicSet,
+          minorityPlayerId,
+          startedAt: serverTimestamp(),
+          timerSeconds: settings.timerSeconds,
+          roundNumber
+        }
+      });
+    }
+
+    async function goToVoting() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+
+      el.goVotingButton.disabled = true;
+      setStatus(el.playingStatus, "投票に進んでいます...");
+
+      try {
+        await update(ref(state.db, `rooms/${state.roomCode}`), {
+          status: "voting",
+          votes: null,
+          result: null
+        });
+      } catch (error) {
+        setStatus(el.playingStatus, `投票への移動に失敗しました: ${error.message}`, "error");
+      } finally {
+        el.goVotingButton.disabled = false;
+      }
+    }
+
+    async function voteForPlayer(targetPlayerId) {
+      if (!state.roomData || !state.roomCode) return;
+      if (targetPlayerId === state.playerId) {
+        setStatus(el.votingStatus, "自分には投票できません。", "error");
+        return;
+      }
+
+      const votes = state.roomData.votes || {};
+      if (votes[state.playerId]) {
+        setStatus(el.votingStatus, "投票済みです。今回は1人1票です。", "error");
+        return;
+      }
+
+      try {
+        await set(ref(state.db, `rooms/${state.roomCode}/votes/${state.playerId}`), {
+          targetPlayerId,
+          votedAt: serverTimestamp()
+        });
+      } catch (error) {
+        setStatus(el.votingStatus, `投票に失敗しました: ${error.message}`, "error");
+      }
+    }
+
+    async function showResults() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+
+      el.showResultsButton.disabled = true;
+      setStatus(el.votingStatus, "結果を集計しています...");
+
+      try {
+        const result = buildResult(state.roomData);
+        await update(ref(state.db, `rooms/${state.roomCode}`), {
+          status: "results",
+          result
+        });
+      } catch (error) {
+        setStatus(el.votingStatus, `結果発表に失敗しました: ${error.message}`, "error");
+      } finally {
+        el.showResultsButton.disabled = false;
+      }
+    }
+
+    async function startNextRound() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+
+      const playerIds = getPlayerEntries(state.roomData.players || {}).map(([playerId]) => playerId);
+      if (playerIds.length < 3) {
+        setStatus(el.resultsStatus, "3人以上で次のラウンドを開始してください。", "error");
+        return;
+      }
+
+      el.nextRoundButton.disabled = true;
+      setStatus(el.resultsStatus, "次のラウンドを開始しています...");
+
+      try {
+        await beginRound(playerIds, getRoundNumber(state.roomData) + 1);
+      } catch (error) {
+        setStatus(el.resultsStatus, `次のラウンドに失敗しました: ${error.message}`, "error");
+      } finally {
+        el.nextRoundButton.disabled = false;
+      }
+    }
+
+    async function backToWaiting() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+      await moveRoomToWaiting(el.resultsStatus);
+    }
+
     async function resetRoom() {
       if (!state.roomData || state.roomData.hostId !== state.playerId) return;
 
       el.resetRoomButton.disabled = true;
-      setStatus(el.playingStatus, "部屋を待機中に戻しています...");
+      await moveRoomToWaiting(el.playingStatus);
+      el.resetRoomButton.disabled = false;
+    }
 
+    async function moveRoomToWaiting(statusElement) {
+      setStatus(statusElement, "部屋を待機中に戻しています...");
       try {
         await update(ref(state.db, `rooms/${state.roomCode}`), {
           status: "waiting",
-          game: null
+          game: null,
+          votes: null,
+          result: null
         });
       } catch (error) {
-        setStatus(el.playingStatus, `リセットに失敗しました: ${error.message}`, "error");
-      } finally {
-        el.resetRoomButton.disabled = false;
+        setStatus(statusElement, `待機に戻せませんでした: ${error.message}`, "error");
       }
+    }
+
+    async function saveSettings() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId || !state.roomCode) return;
+
+      const timerSeconds = Number(el.timerSelect.value) || DEFAULT_TIMER_SECONDS;
+      const topicGenre = topicGenres[el.topicGenreSelect.value] ? el.topicGenreSelect.value : "all";
+
+      try {
+        await update(ref(state.db, `rooms/${state.roomCode}/settings`), {
+          timerSeconds,
+          topicGenre
+        });
+      } catch (error) {
+        setStatus(el.waitingStatus, `設定を保存できませんでした: ${error.message}`, "error");
+      }
+    }
+
+    async function transferHost(targetPlayerId) {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+      if (!state.roomData.players || !state.roomData.players[targetPlayerId]) return;
+
+      try {
+        await update(ref(state.db, `rooms/${state.roomCode}`), {
+          hostId: targetPlayerId
+        });
+      } catch (error) {
+        setStatus(getStatusElementForCurrentPhase(), `ホスト変更に失敗しました: ${error.message}`, "error");
+      }
+    }
+
+    async function leaveRoom() {
+      if (!state.roomCode || !state.db) {
+        showWordwolfView("setup");
+        return;
+      }
+
+      const roomCode = state.roomCode;
+      const roomData = state.roomData;
+      const players = roomData && roomData.players ? roomData.players : {};
+      const remainingEntries = getPlayerEntries(players).filter(([playerId]) => playerId !== state.playerId);
+
+      try {
+        if (!remainingEntries.length) {
+          await set(ref(state.db, `rooms/${roomCode}`), null);
+        } else {
+          const updates = {
+            [`players/${state.playerId}`]: null
+          };
+          if (roomData.hostId === state.playerId) {
+            updates.hostId = remainingEntries[0][0];
+          }
+          await update(ref(state.db, `rooms/${roomCode}`), updates);
+        }
+      } catch (error) {
+        setStatus(getStatusElementForCurrentPhase(), `退出に失敗しました: ${error.message}`, "error");
+        return;
+      }
+
+      if (state.roomUnsubscribe) {
+        state.roomUnsubscribe();
+        state.roomUnsubscribe = null;
+      }
+      stopTimer();
+      state.roomCode = "";
+      state.roomData = null;
+      removeStorage(storageKeys.roomCode);
+      clearUrlRoomCode();
+      showScreen("wordwolf");
+      showWordwolfView("setup");
+      setStatus(el.setupStatus, "部屋を退出しました。", "ok");
     }
 
     async function copyShareUrl() {
@@ -894,6 +1480,143 @@
       return code;
     }
 
+    function getTopicPool(topicGenre) {
+      const pool = topicGenre === "all"
+        ? topicSets
+        : topicSets.filter((topicSet) => topicSet.genre === topicGenre);
+      return pool.length ? pool : topicSets;
+    }
+
+    function getRoomSettings(roomData) {
+      const settings = roomData && roomData.settings ? roomData.settings : {};
+      const timerSeconds = [60, 180, 300, 600].includes(Number(settings.timerSeconds))
+        ? Number(settings.timerSeconds)
+        : DEFAULT_TIMER_SECONDS;
+      const topicGenre = topicGenres[settings.topicGenre] ? settings.topicGenre : "all";
+      return { timerSeconds, topicGenre };
+    }
+
+    function getRoundNumber(roomData) {
+      const roomRound = Number(roomData && roomData.roundNumber);
+      const gameRound = Number(roomData && roomData.game && roomData.game.roundNumber);
+      return roomRound || gameRound || 1;
+    }
+
+    function normalizeStatus(status) {
+      return phaseLabels[status] ? status : "waiting";
+    }
+
+    function getPlayerEntries(players) {
+      return Object.entries(players || {}).sort(([, a], [, b]) => {
+        const left = Number(a.joinedAt) || 0;
+        const right = Number(b.joinedAt) || 0;
+        return left - right;
+      });
+    }
+
+    function getPlayerName(players, playerId) {
+      if (!playerId) return "未確定";
+      const player = players && players[playerId];
+      return player ? sanitizeNickname(player.name) || "名前なし" : "退出済み";
+    }
+
+    function countVotes(players, votes) {
+      const counts = {};
+      for (const playerId of Object.keys(players || {})) {
+        counts[playerId] = 0;
+      }
+      for (const [voterId, vote] of Object.entries(votes || {})) {
+        if (!players[voterId]) continue;
+        if (!vote || !vote.targetPlayerId) continue;
+        counts[vote.targetPlayerId] = (counts[vote.targetPlayerId] || 0) + 1;
+      }
+      return counts;
+    }
+
+    function buildResult(roomData) {
+      const players = roomData.players || {};
+      const votes = roomData.votes || {};
+      const minorityPlayerId = roomData.game && roomData.game.minorityPlayerId;
+      const counts = countVotes(players, votes);
+      const maxVotes = Math.max(0, ...Object.values(counts));
+      const topVotedPlayerIds = Object.entries(counts)
+        .filter(([, count]) => count === maxVotes && count > 0)
+        .map(([playerId]) => playerId);
+      const topVotedPlayerId = topVotedPlayerIds.length === 1 ? topVotedPlayerIds[0] : "";
+      const isMinorityFound = topVotedPlayerId === minorityPlayerId;
+      let winner = "minority";
+
+      if (isMinorityFound) {
+        winner = "majority";
+      }
+
+      return {
+        topVotedPlayerId,
+        isMinorityFound,
+        winner,
+        revealedAt: serverTimestamp()
+      };
+    }
+
+    function getWinnerLabel(winner) {
+      if (winner === "majority") return "多数派勝利";
+      if (winner === "minority") return "少数派勝利";
+      return "引き分け";
+    }
+
+    function getGenreLabel(topicGenre) {
+      return topicGenres[topicGenre] || topicGenres.all;
+    }
+
+    function formatSeconds(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      return `${minutes}分`;
+    }
+
+    function formatRemainingSeconds(totalSeconds) {
+      const safeSeconds = Math.max(0, totalSeconds);
+      const minutes = Math.floor(safeSeconds / 60);
+      const seconds = safeSeconds % 60;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function startTimer(roomData) {
+      const game = roomData.game || {};
+      const startedAt = Number(game.startedAt) || 0;
+      const timerSeconds = Number(game.timerSeconds) || getRoomSettings(roomData).timerSeconds;
+      const timerKey = `${startedAt}-${timerSeconds}`;
+
+      if (state.timerKey !== timerKey) {
+        stopTimer();
+        state.timerKey = timerKey;
+        state.timerInterval = window.setInterval(() => updateTimerDisplay(startedAt, timerSeconds), 1000);
+      }
+      updateTimerDisplay(startedAt, timerSeconds);
+    }
+
+    function updateTimerDisplay(startedAt, timerSeconds) {
+      if (!startedAt) {
+        el.timerDisplay.textContent = formatRemainingSeconds(timerSeconds);
+        el.timerStatus.textContent = "タイマーを準備しています。";
+        return;
+      }
+
+      const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+      const remainingSeconds = Math.max(0, timerSeconds - elapsedSeconds);
+      el.timerDisplay.textContent = formatRemainingSeconds(remainingSeconds);
+      el.timerStatus.textContent = remainingSeconds === 0
+        ? "時間終了。投票に進んでください。"
+        : "話し合いタイム";
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        window.clearInterval(state.timerInterval);
+      }
+      state.timerInterval = null;
+      state.timerKey = "";
+    }
+
     function getOrCreatePlayerId() {
       const savedId = readStorage(storageKeys.playerId);
       if (savedId) return savedId;
@@ -918,6 +1641,14 @@
     function writeStorage(key, value) {
       try {
         localStorage.setItem(key, value);
+      } catch (error) {
+        console.warn("localStorage is not available:", error);
+      }
+    }
+
+    function removeStorage(key) {
+      try {
+        localStorage.removeItem(key);
       } catch (error) {
         console.warn("localStorage is not available:", error);
       }
@@ -964,6 +1695,12 @@
       window.history.replaceState(null, "", url.toString());
     }
 
+    function clearUrlRoomCode() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("room");
+      window.history.replaceState(null, "", url.toString());
+    }
+
     function getShareUrl(roomCode) {
       if (!roomCode) return "";
       return `${PUBLIC_BASE_URL}?room=${encodeURIComponent(roomCode)}`;
@@ -978,12 +1715,25 @@
       el.setupView.classList.toggle("is-active", viewName === "setup");
       el.waitingView.classList.toggle("is-active", viewName === "waiting");
       el.playingView.classList.toggle("is-active", viewName === "playing");
+      el.votingView.classList.toggle("is-active", viewName === "voting");
+      el.resultsView.classList.toggle("is-active", viewName === "results");
     }
 
     function toggleHostControls(isHost, status) {
-      el.hostWaitingControls.classList.toggle("is-visible", isHost && status !== "playing");
-      el.guestWaitingMessage.classList.toggle("is-visible", !isHost && status !== "playing");
+      el.hostWaitingControls.classList.toggle("is-visible", isHost && status === "waiting");
+      el.hostSettingsControls.classList.toggle("is-visible", isHost && status === "waiting");
+      el.guestWaitingMessage.classList.toggle("is-visible", !isHost && status === "waiting");
       el.hostPlayingControls.classList.toggle("is-visible", isHost && status === "playing");
+      el.hostVotingControls.classList.toggle("is-visible", isHost && status === "voting");
+      el.hostResultsControls.classList.toggle("is-visible", isHost && status === "results");
+    }
+
+    function getStatusElementForCurrentPhase() {
+      const status = normalizeStatus(state.roomData && state.roomData.status);
+      if (status === "playing") return el.playingStatus;
+      if (status === "voting") return el.votingStatus;
+      if (status === "results") return el.resultsStatus;
+      return el.waitingStatus;
     }
 
     function setSetupButtonsDisabled(disabled) {
