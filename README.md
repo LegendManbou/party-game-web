@@ -12,6 +12,7 @@ Firebase Realtime Databaseで同期して遊べる、GitHub Pages向けの静的
 - トップ画面の「その他ゲーム」ボタンから、その他ゲーム画面に切り替えられます。
 - ガーティックフォンへの外部リンクを追加しています。
 - ガーティックフォンのカード画像は `assets/gartic-phone.png` を使います。
+- skribbl.io への外部リンクを追加し、カード画像は `assets/skribbl-io.png` を使います。
 
 ## スパイ探しの遊び方
 

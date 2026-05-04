@@ -252,6 +252,10 @@
       background: #2b0a45;
     }
 
+    .external-game-media.is-hidden {
+      display: none;
+    }
+
     .external-game-media:focus-visible,
     .external-game-play-button:focus-visible {
       outline: 3px solid rgba(96, 165, 250, 0.48);
@@ -271,6 +275,11 @@
       padding: 0 14px 14px;
     }
 
+    .external-game-body:first-child,
+    .external-game-media.is-hidden + .external-game-body {
+      padding-top: 14px;
+    }
+
     .external-game-badge {
       justify-self: start;
       border: 1px solid rgba(255, 255, 255, 0.28);
@@ -287,6 +296,12 @@
       color: #ffffff;
       font-size: 1.35rem;
       letter-spacing: 0;
+    }
+
+    .external-game-genre {
+      margin: 0;
+      color: #fce7f3;
+      font-weight: 700;
     }
 
     .external-game-card p {
@@ -667,6 +682,7 @@
 
       .external-game-badge,
       .external-game-card h3,
+      .external-game-genre,
       .external-game-card p {
         grid-column: 1;
       }
@@ -1023,6 +1039,14 @@
         image: "assets/gartic-phone.png",
         url: "https://garticphone.com/ja",
         badge: "外部サイト"
+      },
+      {
+        title: "skribbl.io",
+        genre: "お絵描き当てゲーム",
+        description: "1人が絵を描いて、他の人が答えを当てる定番のお絵描きゲーム。友達同士で部屋を作って遊べる。",
+        image: "assets/skribbl-io.png",
+        url: "https://skribbl.io/",
+        badge: "お絵描き"
       }
     ];
 
@@ -1884,18 +1908,24 @@
         const card = document.createElement("article");
         card.className = "external-game-card";
 
-        const mediaLink = document.createElement("a");
-        mediaLink.className = "external-game-media";
-        mediaLink.href = game.url;
-        mediaLink.target = "_blank";
-        mediaLink.rel = "noopener noreferrer";
-        mediaLink.setAttribute("aria-label", `${game.title}を新しいタブで開く`);
+        if (game.image) {
+          const mediaLink = document.createElement("a");
+          mediaLink.className = "external-game-media";
+          mediaLink.href = game.url;
+          mediaLink.target = "_blank";
+          mediaLink.rel = "noopener noreferrer";
+          mediaLink.setAttribute("aria-label", `${game.title}を新しいタブで開く`);
 
-        const image = document.createElement("img");
-        image.src = game.image;
-        image.alt = `${game.title}のイメージ`;
-        image.loading = "lazy";
-        mediaLink.append(image);
+          const image = document.createElement("img");
+          image.src = game.image;
+          image.alt = `${game.title}のイメージ`;
+          image.loading = "lazy";
+          image.addEventListener("error", () => {
+            mediaLink.classList.add("is-hidden");
+          }, { once: true });
+          mediaLink.append(image);
+          card.append(mediaLink);
+        }
 
         const body = document.createElement("div");
         body.className = "external-game-body";
@@ -1910,6 +1940,14 @@
         const title = document.createElement("h3");
         title.textContent = game.title;
 
+        const detailElements = [title];
+        if (game.genre) {
+          const genre = document.createElement("p");
+          genre.className = "external-game-genre";
+          genre.textContent = game.genre;
+          detailElements.push(genre);
+        }
+
         const description = document.createElement("p");
         description.textContent = game.description;
 
@@ -1921,8 +1959,8 @@
         playLink.textContent = "遊ぶ";
         playLink.setAttribute("aria-label", `${game.title}を新しいタブで開く`);
 
-        body.append(title, description, playLink);
-        card.append(mediaLink, body);
+        body.append(...detailElements, description, playLink);
+        card.append(body);
         el.externalGamesList.append(card);
       });
     }
