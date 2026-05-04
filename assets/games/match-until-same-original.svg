@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Abstract matching answers image</title>
+  <desc id="desc">A handmade abstract illustration with answer cards, check marks, and conversation bubbles.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="0.5" stop-color="#ef4444"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#111827" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <circle cx="170" cy="150" r="120" fill="#ffffff" opacity="0.1"/>
+  <circle cx="1110" cy="570" r="170" fill="#ffffff" opacity="0.12"/>
+  <g opacity="0.2" fill="none" stroke="#ffffff" stroke-width="5">
+    <path d="M80 565 q95-80 190 0 t190 0"/>
+    <path d="M860 120 q85-68 170 0 t170 0"/>
+    <path d="M110 330 h120 M170 270 v120"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="215" y="235" width="250" height="180" rx="24" fill="#ffffff" opacity="0.95"/>
+    <rect x="515" y="170" width="250" height="180" rx="24" fill="#ffffff" opacity="0.95"/>
+    <rect x="815" y="235" width="250" height="180" rx="24" fill="#ffffff" opacity="0.95"/>
+    <path d="M275 322 h130 M275 366 h92" stroke="#f59e0b" stroke-width="18" stroke-linecap="round"/>
+    <path d="M575 257 h130 M575 301 h92" stroke="#ef4444" stroke-width="18" stroke-linecap="round"/>
+    <path d="M875 322 h130 M875 366 h92" stroke="#8b5cf6" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <g filter="url(#shadow)">
+    <circle cx="640" cy="475" r="105" fill="#ffffff"/>
+    <path d="M590 475 l38 38 l72-88" fill="none" stroke="#22c55e" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M340 110 h170 a38 38 0 0 1 38 38 v48 a38 38 0 0 1-38 38 h-70 l-58 48 v-48 h-42 a38 38 0 0 1-38-38 v-48 a38 38 0 0 1 38-38z" fill="#fef3c7" opacity="0.95"/>
+    <path d="M770 500 h170 a38 38 0 0 1 38 38 v48 a38 38 0 0 1-38 38 h-42 v48 l-58-48 h-70 a38 38 0 0 1-38-38 v-48 a38 38 0 0 1 38-38z" fill="#ede9fe" opacity="0.95"/>
+    <circle cx="388" cy="172" r="12" fill="#f59e0b"/>
+    <circle cx="430" cy="172" r="12" fill="#f59e0b"/>
+    <circle cx="472" cy="172" r="12" fill="#f59e0b"/>
+    <circle cx="818" cy="562" r="12" fill="#8b5cf6"/>
+    <circle cx="860" cy="562" r="12" fill="#8b5cf6"/>
+    <circle cx="902" cy="562" r="12" fill="#8b5cf6"/>
+  </g>
+</svg>

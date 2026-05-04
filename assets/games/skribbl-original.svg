@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Abstract drawing quiz image</title>
+  <desc id="desc">A handmade abstract illustration with a canvas, pencil, quiz marks, and colorful doodles.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="0.5" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g opacity="0.16" fill="none" stroke="#ffffff" stroke-width="4">
+    <path d="M80 125 h110 v80 h-110z"/>
+    <circle cx="1080" cy="140" r="56"/>
+    <path d="M930 610 l50-90 50 90z"/>
+    <path d="M185 560 q75-95 160 0 t160 0"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="300" y="105" width="680" height="460" rx="34" fill="url(#paper)"/>
+    <rect x="330" y="145" width="620" height="360" rx="22" fill="#f8fafc"/>
+    <path d="M410 400 C500 260 630 470 728 315 C774 244 832 262 875 344" fill="none" stroke="#22c55e" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="495" cy="252" r="38" fill="#facc15"/>
+    <path d="M410 450 h350" stroke="#38bdf8" stroke-width="18" stroke-linecap="round"/>
+    <path d="M780 420 q70-60 135 0" fill="none" stroke="#f472b6" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <g filter="url(#shadow)" transform="rotate(-24 900 455)">
+    <rect x="755" y="410" width="360" height="74" rx="37" fill="#fde68a"/>
+    <rect x="755" y="410" width="78" height="74" rx="37" fill="#f97316"/>
+    <path d="M1115 410 l78 37 l-78 37z" fill="#fef3c7"/>
+    <path d="M1174 438 l36 9 l-36 9z" fill="#111827"/>
+  </g>
+  <g filter="url(#shadow)">
+    <circle cx="220" cy="250" r="76" fill="#ffffff" opacity="0.94"/>
+    <path d="M207 236 c0-34 56-37 56 1 c0 34-43 35-43 72" fill="none" stroke="#2563eb" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="220" cy="340" r="10" fill="#2563eb"/>
+    <circle cx="1040" cy="230" r="76" fill="#ffffff" opacity="0.94"/>
+    <path d="M1027 216 c0-34 56-37 56 1 c0 34-43 35-43 72" fill="none" stroke="#ec4899" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="1040" cy="320" r="10" fill="#ec4899"/>
+  </g>
+  <g fill="#ffffff" opacity="0.9">
+    <circle cx="182" cy="622" r="14"/>
+    <circle cx="225" cy="630" r="9"/>
+    <circle cx="1105" cy="570" r="13"/>
+  </g>
+</svg>

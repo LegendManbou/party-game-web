@@ -328,6 +328,21 @@
       box-shadow: 0 10px 20px rgba(96, 165, 250, 0.24);
     }
 
+    .external-game-note,
+    .external-games-disclaimer {
+      color: #bfdbfe;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    .external-games-disclaimer {
+      margin: 16px 0 0;
+      border: 1px solid rgba(147, 197, 253, 0.24);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.24);
+    }
+
     .play-surface {
       overflow: hidden;
     }
@@ -874,6 +889,7 @@
         <button id="back-external-games-button" class="external-games-back-button" type="button">Party Game Webに戻る</button>
       </div>
       <div id="external-games-list" class="external-games-list" aria-label="その他ゲーム"></div>
+      <p class="external-games-disclaimer">このサイトは個人制作の非公式サイトです。外部ゲームへのリンクは各公式サイトを新しいタブで開きます。各外部ゲームの権利はそれぞれの運営元に帰属します。</p>
     </section>
 
     <section id="wordwolf-screen" class="screen" aria-labelledby="wordwolf-title" aria-hidden="true" hidden>
@@ -1194,15 +1210,17 @@
       {
         title: "ガーティックフォン",
         description: "絵を描いて伝える定番パーティーゲーム",
-        image: "assets/gartic-phone.png",
+        image: "assets/games/gartic-phone-original.svg",
+        imageAlt: "電話、ペン、吹き出しを組み合わせた自作の抽象イメージ",
         url: "https://garticphone.com/ja",
-        badge: "外部サイト"
+        badge: "外部公式サイト"
       },
       {
         title: "skribbl.io",
         genre: "お絵描き当てゲーム",
         description: "1人が絵を描いて、他の人が答えを当てる定番のお絵描きゲーム。友達同士で部屋を作って遊べる。",
-        image: "assets/skribbl-io.png",
+        image: "assets/games/skribbl-original.svg",
+        imageAlt: "鉛筆、キャンバス、クイズ記号を組み合わせた自作の抽象イメージ",
         url: "https://skribbl.io/",
         badge: "お絵描き"
       },
@@ -1210,7 +1228,8 @@
         title: "一致するまで終われまテン",
         genre: "全員一致・相性ゲーム",
         description: "お題に対して全員で同じ答えを目指すゲーム。友達同士の価値観が出て盛り上がる。",
-        image: "assets/itchi-made-owarema-ten.png",
+        image: "assets/games/match-until-same-original.svg",
+        imageAlt: "回答カード、チェックマーク、会話を組み合わせた自作の抽象イメージ",
         url: "https://loungegame.site/",
         badge: "全員一致"
       }
@@ -2235,7 +2254,7 @@
 
           const image = document.createElement("img");
           image.src = game.image;
-          image.alt = `${game.title}のイメージ`;
+          image.alt = game.imageAlt || `${game.title}の自作イメージ`;
           image.loading = "lazy";
           image.addEventListener("error", () => {
             mediaLink.classList.add("is-hidden");
@@ -2268,15 +2287,19 @@
         const description = document.createElement("p");
         description.textContent = game.description;
 
+        const linkNote = document.createElement("p");
+        linkNote.className = "external-game-note";
+        linkNote.textContent = "外部公式サイトを新しいタブで開きます。";
+
         const playLink = document.createElement("a");
         playLink.className = "external-game-play-button";
         playLink.href = game.url;
         playLink.target = "_blank";
         playLink.rel = "noopener noreferrer";
-        playLink.textContent = "遊ぶ";
+        playLink.textContent = "外部公式サイトを開く";
         playLink.setAttribute("aria-label", `${game.title}を新しいタブで開く`);
 
-        body.append(...detailElements, description, playLink);
+        body.append(...detailElements, description, linkNote, playLink);
         card.append(body);
         el.externalGamesList.append(card);
       });
