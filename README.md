@@ -13,6 +13,7 @@ Firebase Realtime Databaseで同期して遊べる、GitHub Pages向けの静的
 - ガーティックフォンへの外部リンクを追加しています。
 - ガーティックフォンのカード画像は `assets/gartic-phone.png` を使います。
 - skribbl.io への外部リンクを追加し、カード画像は `assets/skribbl-io.png` を使います。
+- 一致するまで終われまテンへの外部リンクを追加し、カード画像は `assets/itchi-made-owarema-ten.png` を使います。
 
 ## スパイ探しの遊び方
 
