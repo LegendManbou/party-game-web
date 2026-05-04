@@ -182,6 +182,11 @@
       background: #f7fbff;
     }
 
+    .game-card.ngword-card {
+      border-color: #f0c36b;
+      background: #fffaf0;
+    }
+
     .game-card h3,
     .view-title {
       margin: 0;
@@ -411,6 +416,15 @@
       --ok-bg: #edf8ff;
     }
 
+    .ngword-theme {
+      --surface-strong: #fff5db;
+      --primary: #a15505;
+      --primary-dark: #783d00;
+      --accent: #f4b83f;
+      --info-bg: #fff8e8;
+      --ok-bg: #fff9ed;
+    }
+
     .phase-row {
       display: flex;
       flex-wrap: wrap;
@@ -508,6 +522,11 @@
       border-color: #6bd3e6;
     }
 
+    .topic-box.ng-card {
+      background: #fff8e6;
+      border-color: #f4b83f;
+    }
+
     .topic-label {
       margin: 0;
       color: var(--muted);
@@ -526,6 +545,10 @@
 
     .spyhunt-theme .topic-word {
       color: #15377a;
+    }
+
+    .ngword-theme .topic-word {
+      color: #783d00;
     }
 
     .secret-detail {
@@ -561,6 +584,56 @@
       border-radius: 8px;
       padding: 12px;
       background: #ffffff;
+    }
+
+    .ng-word-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ng-word-card {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .ng-word-card.is-self {
+      border-color: var(--accent);
+      background: #fffaf0;
+    }
+
+    .ng-word-card.is-eliminated {
+      border-color: #f2b8b5;
+      background: #fff6f5;
+    }
+
+    .ng-word-card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .ng-word-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .ng-word-value {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 1.35rem;
+      font-weight: 900;
+      overflow-wrap: anywhere;
     }
 
     .timer-box {
@@ -727,6 +800,11 @@
             <p>1人または複数人だけ場所を知らない。質問と会話でスパイを見つけるゲーム</p>
             <button id="open-spyhunt-button" type="button">このゲームで遊ぶ</button>
           </article>
+          <article class="game-card ngword-card" data-game-id="ng-word">
+            <h3>NGワードゲーム</h3>
+            <p>自分だけ知らないNGワードを言わずに会話するゲーム</p>
+            <button id="open-ng-word-button" type="button">このゲームで遊ぶ</button>
+          </article>
         </div>
       </section>
     </section>
@@ -846,7 +924,7 @@
               <p id="my-role-label" class="topic-label">あなたのお題</p>
               <p id="my-topic" class="topic-word">-</p>
               <p id="my-role-detail" class="secret-detail"></p>
-              <strong>他の人に見せないでください</strong>
+              <strong id="role-card-note">他の人に見せないでください</strong>
             </div>
 
             <div id="spy-candidate-box" class="question-box game-only is-hidden">
@@ -866,6 +944,12 @@
               <span class="hint">残り時間</span>
               <div id="timer-display" class="timer-display">--:--</div>
               <div id="timer-status" class="hint">話し合いタイム</div>
+            </div>
+
+            <div id="ng-word-board" class="question-box game-only is-hidden">
+              <h3 class="view-title">NGワード一覧</h3>
+              <p class="hint">自分のNGワードは表示されません。他の人のNGワードを見ながら会話してください。</p>
+              <ul id="ng-word-card-list" class="ng-word-list"></ul>
             </div>
 
             <div>
@@ -1029,7 +1113,8 @@
 
     const games = [
       { id: "wordwolf", title: "ワードウルフ" },
-      { id: "spyhunt", title: "スパイ探し" }
+      { id: "spyhunt", title: "スパイ探し" },
+      { id: "ng-word", title: "NGワードゲーム" }
     ];
 
     const externalGames = [
@@ -1176,6 +1261,39 @@
       ...Object.fromEntries(Object.keys(SPYHUNT_LOCATION_SOURCE).map((genre) => [genre, genre]))
     };
 
+    const NG_WORD_SOURCE = {
+      "日常": [
+        "スマホ", "テレビ", "コンビニ", "駅", "電車", "バス", "財布", "鍵", "傘", "天気",
+        "雨", "洗濯", "掃除", "料理", "買い物", "仕事", "休日", "寝坊", "朝ごはん", "夜更かし",
+        "お風呂", "歯みがき", "電話", "写真", "散歩", "病院", "薬", "ニュース", "家族", "友達"
+      ],
+      "学校": [
+        "先生", "宿題", "テスト", "黒板", "教科書", "ノート", "鉛筆", "消しゴム", "給食", "部活",
+        "体育", "音楽", "図工", "理科", "社会", "国語", "数学", "英語", "校庭", "教室",
+        "図書室", "保健室", "廊下", "チャイム", "制服", "遠足", "修学旅行", "文化祭", "席替え", "卒業"
+      ],
+      "食べ物": [
+        "カレー", "ラーメン", "寿司", "焼肉", "ハンバーグ", "ピザ", "パスタ", "うどん", "そば", "パン",
+        "おにぎり", "唐揚げ", "餃子", "たこ焼き", "アイス", "ケーキ", "チョコ", "プリン", "りんご", "みかん",
+        "バナナ", "サラダ", "スープ", "卵", "牛乳", "コーヒー", "お茶", "ジュース", "ポテト", "味噌汁"
+      ],
+      "ゲーム": [
+        "コントローラー", "サイコロ", "カード", "ボードゲーム", "人狼", "マリオ", "ポケモン", "スプラトゥーン", "マイクラ", "フォートナイト",
+        "パズル", "クイズ", "レベル", "ボス", "セーブ", "ガチャ", "ランキング", "チーム", "対戦", "協力",
+        "ミッション", "ステージ", "アイテム", "装備", "魔法", "剣", "盾", "回復", "勝利", "敗北"
+      ],
+      "アニメ・漫画": [
+        "主人公", "ライバル", "ヒロイン", "必殺技", "変身", "魔法少女", "ロボット", "異世界", "冒険", "友情",
+        "修行", "師匠", "悪役", "最終回", "伏線", "名言", "声優", "オープニング", "エンディング", "映画化",
+        "単行本", "週刊誌", "アニメ化", "コスプレ", "学園", "バトル", "スポーツ", "ファンタジー", "探偵", "怪盗"
+      ]
+    };
+
+    const ngWordGenres = {
+      all: "なんでも",
+      ...Object.fromEntries(Object.keys(NG_WORD_SOURCE).map((genre) => [genre, genre]))
+    };
+
     const questionSeedStorageKey = "party-game-web.spyhunt.questionSeed";
     const spyVoteSelection = {
       selected: new Set()
@@ -1194,6 +1312,10 @@
       spyhunt: {
         title: "スパイ探し",
         description: "1人または複数人だけ場所を知らない。質問と会話でスパイを見つけるゲーム"
+      },
+      "ng-word": {
+        title: "NGワードゲーム",
+        description: "自分だけ知らないNGワードを言わずに会話するゲーム"
       }
     };
 
@@ -1766,6 +1888,7 @@
       externalGamesList: document.querySelector("#external-games-list"),
       openWordwolfButton: document.querySelector("#open-wordwolf-button"),
       openSpyHuntButton: document.querySelector("#open-spyhunt-button"),
+      openNgWordButton: document.querySelector("#open-ng-word-button"),
       backHomeButton: document.querySelector("#back-home-button"),
       nicknameInput: document.querySelector("#nickname-input"),
       roomCodeInput: document.querySelector("#room-code-input"),
@@ -1832,11 +1955,14 @@
       myRoleLabel: document.querySelector("#my-role-label"),
       myTopic: document.querySelector("#my-topic"),
       myRoleDetail: document.querySelector("#my-role-detail"),
+      roleCardNote: document.querySelector("#role-card-note"),
       spyCandidateBox: document.querySelector("#spy-candidate-box"),
       candidateLocationList: document.querySelector("#candidate-location-list"),
       questionBox: document.querySelector("#question-box"),
       questionList: document.querySelector("#question-list"),
       refreshQuestionButton: document.querySelector("#refresh-question-button"),
+      ngWordBoard: document.querySelector("#ng-word-board"),
+      ngWordCardList: document.querySelector("#ng-word-card-list"),
       resultMajorityLabel: document.querySelector("#result-majority-label"),
       resultMinorityLabel: document.querySelector("#result-minority-label"),
       resultMajorityWord: document.querySelector("#result-majority-word"),
@@ -1877,6 +2003,7 @@
       el.backExternalGamesButton.addEventListener("click", () => showScreen("home"));
       el.openWordwolfButton.addEventListener("click", () => selectGame("wordwolf"));
       el.openSpyHuntButton.addEventListener("click", () => selectGame("spyhunt"));
+      el.openNgWordButton.addEventListener("click", () => selectGame("ng-word"));
       el.backHomeButton.addEventListener("click", () => showScreen("home"));
       el.createRoomButton.addEventListener("click", createRoom);
       el.joinRoomButton.addEventListener("click", joinRoom);
@@ -2190,6 +2317,10 @@
     }
 
     function renderPlayingView(roomData) {
+      if (isNgWordRoom(roomData)) {
+        renderNgWordPlayingView(roomData);
+        return;
+      }
       if (isSpyHuntRoom(roomData)) {
         renderSpyHuntPlayingView(roomData);
         return;
@@ -2199,6 +2330,7 @@
       const minorityPlayerId = roomData.game && roomData.game.minorityPlayerId;
 
       el.roleCard.classList.remove("spy-card");
+      el.roleCard.classList.remove("ng-card");
       el.myRoleLabel.textContent = "あなたのお題";
       if (!topicSet || !minorityPlayerId) {
         el.myTopic.textContent = "読み込み中";
@@ -2206,8 +2338,10 @@
         el.myTopic.textContent = minorityPlayerId === state.playerId ? topicSet.minority : topicSet.majority;
       }
       el.myRoleDetail.textContent = "";
+      el.roleCardNote.textContent = "他の人に見せないでください";
       el.spyCandidateBox.classList.add("is-hidden");
       el.questionBox.classList.add("is-hidden");
+      el.ngWordBoard.classList.add("is-hidden");
 
       showWordwolfView("playing");
       setStatus(el.playingStatus, "");
@@ -2221,6 +2355,7 @@
       const myRole = spyHunt.roles && spyHunt.roles[state.playerId];
 
       el.roleCard.classList.add("spy-card");
+      el.roleCard.classList.remove("ng-card");
       if (isSpy) {
         el.myRoleLabel.textContent = "あなたはスパイです";
         el.myTopic.textContent = "場所は分かりません";
@@ -2236,11 +2371,99 @@
         el.spyCandidateBox.classList.add("is-hidden");
       }
 
+      el.roleCardNote.textContent = "他の人に見せないでください";
+      el.ngWordBoard.classList.add("is-hidden");
       renderQuestionExamples(roomData);
       el.questionBox.classList.remove("is-hidden");
       showWordwolfView("playing");
       setStatus(el.playingStatus, "");
       startTimer(roomData);
+    }
+
+    function renderNgWordPlayingView(roomData) {
+      el.roleCard.classList.remove("spy-card");
+      el.roleCard.classList.add("ng-card");
+      el.myRoleLabel.textContent = "あなたのNGワード";
+      el.myTopic.textContent = "表示されません";
+      el.myRoleDetail.textContent = "他の人のNGワードを見ながら、自分のNGワードを言わないように会話しましょう。";
+      el.roleCardNote.textContent = "あなたのNGワードはこの画面にも表示されません";
+      el.spyCandidateBox.classList.add("is-hidden");
+      el.questionBox.classList.add("is-hidden");
+      el.ngWordBoard.classList.remove("is-hidden");
+      renderNgWordCards(roomData);
+      showWordwolfView("playing");
+      setStatus(el.playingStatus, "");
+      startTimer(roomData);
+    }
+
+    function renderNgWordCards(roomData) {
+      const players = roomData.players || {};
+      const game = roomData.game || {};
+      const ngWords = game.ngWords || {};
+      const eliminated = game.eliminated || {};
+      const isHost = roomData.hostId === state.playerId;
+      const entries = getPlayerEntries(players);
+      el.ngWordCardList.replaceChildren();
+
+      if (!entries.length) {
+        const item = document.createElement("li");
+        item.className = "ng-word-card";
+        item.textContent = "参加者がいません。";
+        el.ngWordCardList.append(item);
+        return;
+      }
+
+      for (const [playerId] of entries) {
+        const isSelf = playerId === state.playerId;
+        const isEliminated = Boolean(eliminated[playerId]);
+        const item = document.createElement("li");
+        item.className = "ng-word-card";
+        item.classList.toggle("is-self", isSelf);
+        item.classList.toggle("is-eliminated", isEliminated);
+
+        const header = document.createElement("div");
+        header.className = "ng-word-card-header";
+
+        const name = document.createElement("strong");
+        name.className = "ng-word-name";
+        name.textContent = `${getPlayerName(players, playerId)}${isSelf ? "（自分）" : ""}`;
+
+        const badges = document.createElement("span");
+        badges.className = "player-actions";
+
+        if (playerId === roomData.hostId) {
+          const hostBadge = document.createElement("span");
+          hostBadge.className = "badge";
+          hostBadge.textContent = "HOST";
+          badges.append(hostBadge);
+        }
+
+        const stateBadge = document.createElement("span");
+        stateBadge.className = "badge";
+        stateBadge.textContent = isEliminated ? "脱落済み" : "生存中";
+        badges.append(stateBadge);
+
+        header.append(name, badges);
+
+        const word = document.createElement("p");
+        word.className = "ng-word-value";
+        word.textContent = isSelf
+          ? "あなたのNGワードは表示されません"
+          : ngWords[playerId] || "未設定";
+
+        item.append(header, word);
+
+        if (isHost) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = isEliminated ? "compact-button ghost-button" : "compact-button danger-button";
+          button.textContent = isEliminated ? "脱落を取り消す" : "脱落にする";
+          button.addEventListener("click", () => setNgWordEliminated(playerId, !isEliminated));
+          item.append(button);
+        }
+
+        el.ngWordCardList.append(item);
+      }
     }
 
     function renderCandidateLocations(locations) {
@@ -2451,6 +2674,10 @@
     }
 
     function renderResultsView(roomData) {
+      if (isNgWordRoom(roomData)) {
+        renderNgWordResultsView(roomData);
+        return;
+      }
       if (isSpyHuntRoom(roomData)) {
         renderSpyHuntResultsView(roomData);
         return;
@@ -2495,6 +2722,55 @@
         const item = document.createElement("li");
         item.className = "result-item";
         item.textContent = `${getPlayerName(players, playerId)}: ${count}票`;
+        el.resultCountList.append(item);
+      }
+
+      showWordwolfView("results");
+      setStatus(el.resultsStatus, "");
+    }
+
+    function renderNgWordResultsView(roomData) {
+      const players = roomData.players || {};
+      const game = roomData.game || {};
+      const result = roomData.result || buildNgWordResult(roomData);
+      const ngWords = result.ngWords || game.ngWords || {};
+      const survivorNames = (result.survivorPlayerIds || [])
+        .map((playerId) => getPlayerName(players, playerId))
+        .join("、") || "なし";
+      const eliminatedNames = (result.eliminatedPlayerIds || [])
+        .map((playerId) => getPlayerName(players, playerId))
+        .join("、") || "なし";
+
+      el.resultMajorityLabel.textContent = "勝者";
+      el.resultMinorityLabel.textContent = "脱落者";
+      el.resultVoteTitle.textContent = "勝者・脱落者";
+      el.resultCountTitle.textContent = "NGワード一覧";
+      el.resultMajorityWord.textContent = survivorNames;
+      el.resultMinorityWord.textContent = eliminatedNames;
+      el.minorityPlayerName.textContent = `Round ${getRoundNumber(roomData)}`;
+      el.winnerText.textContent = "脱落していない人全員が勝ち";
+      el.resultSummary.textContent = "時間終了時または結果発表時に生存していたプレイヤーが勝者です。";
+
+      el.resultVoteList.replaceChildren();
+      for (const text of [`勝者: ${survivorNames}`, `脱落者: ${eliminatedNames}`]) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = text;
+        el.resultVoteList.append(item);
+      }
+
+      el.resultCountList.replaceChildren();
+      const playerIds = getNgWordPlayerIds(roomData);
+      for (const playerId of playerIds) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = `${getPlayerName(players, playerId)}: ${ngWords[playerId] || "未設定"}`;
+        el.resultCountList.append(item);
+      }
+      if (!el.resultCountList.children.length) {
+        const item = document.createElement("li");
+        item.className = "result-item";
+        item.textContent = "NGワードはありません。";
         el.resultCountList.append(item);
       }
 
@@ -2622,8 +2898,9 @@
       if (!state.roomData || state.roomData.hostId !== state.playerId) return;
 
       const playerIds = getPlayerEntries(state.roomData.players || {}).map(([playerId]) => playerId);
-      if (playerIds.length < 3) {
-        setStatus(el.waitingStatus, "3人以上で開始してください。", "error");
+      const minPlayers = isNgWordRoom(state.roomData) ? 1 : 3;
+      if (playerIds.length < minPlayers) {
+        setStatus(el.waitingStatus, `${minPlayers}人以上で開始してください。`, "error");
         return;
       }
 
@@ -2640,6 +2917,10 @@
     }
 
     async function beginRound(playerIds, roundNumber) {
+      if (isNgWordRoom(state.roomData)) {
+        await beginNgWordRound(playerIds, roundNumber);
+        return;
+      }
       if (isSpyHuntRoom(state.roomData)) {
         await beginSpyHuntRound(playerIds, roundNumber);
         return;
@@ -2663,6 +2944,28 @@
         game: {
           topicSet,
           minorityPlayerId,
+          startedAt: serverTimestamp(),
+          timerSeconds: settings.timerSeconds,
+          roundNumber
+        }
+      });
+    }
+
+    async function beginNgWordRound(playerIds, roundNumber) {
+      const settings = getRoomSettings(state.roomData);
+      const ngWords = assignNgWords(playerIds, settings.topicGenre);
+
+      await update(ref(state.db, `rooms/${state.roomCode}`), {
+        status: "playing",
+        roundNumber,
+        votes: null,
+        spyGuesses: null,
+        spyHunt: null,
+        result: null,
+        game: {
+          ngWords,
+          eliminated: {},
+          genre: settings.topicGenre,
           startedAt: serverTimestamp(),
           timerSeconds: settings.timerSeconds,
           roundNumber
@@ -2727,18 +3030,39 @@
       if (!state.roomData || state.roomData.hostId !== state.playerId) return;
 
       el.goVotingButton.disabled = true;
-      setStatus(el.playingStatus, "投票に進んでいます...");
+      const isNgWord = isNgWordRoom(state.roomData);
+      setStatus(el.playingStatus, isNgWord ? "結果発表に進んでいます..." : "投票に進んでいます...");
+
+      try {
+        if (isNgWord) {
+          await update(ref(state.db, `rooms/${state.roomCode}`), {
+            status: "results",
+            result: buildNgWordResult(state.roomData)
+          });
+        } else {
+          await update(ref(state.db, `rooms/${state.roomCode}`), {
+            status: "voting",
+            votes: null,
+            result: null
+          });
+        }
+      } catch (error) {
+        setStatus(el.playingStatus, `${isNgWord ? "結果発表" : "投票への移動"}に失敗しました: ${error.message}`, "error");
+      } finally {
+        el.goVotingButton.disabled = false;
+      }
+    }
+
+    async function setNgWordEliminated(playerId, shouldEliminate) {
+      if (!state.roomData || !state.roomCode || state.roomData.hostId !== state.playerId || !isNgWordRoom(state.roomData)) return;
+      if (!state.roomData.players || !state.roomData.players[playerId]) return;
 
       try {
         await update(ref(state.db, `rooms/${state.roomCode}`), {
-          status: "voting",
-          votes: null,
-          result: null
+          [`game/eliminated/${playerId}`]: shouldEliminate ? true : null
         });
       } catch (error) {
-        setStatus(el.playingStatus, `投票への移動に失敗しました: ${error.message}`, "error");
-      } finally {
-        el.goVotingButton.disabled = false;
+        setStatus(el.playingStatus, `脱落状態を更新できませんでした: ${error.message}`, "error");
       }
     }
 
@@ -2834,7 +3158,9 @@
       setStatus(getStatusElementForCurrentPhase(), "結果を集計しています...");
 
       try {
-        const result = isSpyHuntRoom(state.roomData)
+        const result = isNgWordRoom(state.roomData)
+          ? buildNgWordResult(state.roomData)
+          : isSpyHuntRoom(state.roomData)
           ? buildSpyHuntResult(state.roomData)
           : buildResult(state.roomData);
         await update(ref(state.db, `rooms/${state.roomCode}`), {
@@ -2870,8 +3196,9 @@
       if (!state.roomData || state.roomData.hostId !== state.playerId) return;
 
       const playerIds = getPlayerEntries(state.roomData.players || {}).map(([playerId]) => playerId);
-      if (playerIds.length < 3) {
-        setStatus(el.resultsStatus, "3人以上で次のラウンドを開始してください。", "error");
+      const minPlayers = isNgWordRoom(state.roomData) ? 1 : 3;
+      if (playerIds.length < minPlayers) {
+        setStatus(el.resultsStatus, `${minPlayers}人以上で次のラウンドを開始してください。`, "error");
         return;
       }
 
@@ -3060,7 +3387,11 @@
     function renderTopicGenreOptions() {
       const gameType = getValidGameType(state.selectedGameType);
       const selectedGenre = getValidGenreForGame(gameType, el.topicGenreSelect.value);
-      const genreOptions = gameType === "spyhunt" ? spyHuntGenres : topicGenres;
+      const genreOptions = gameType === "spyhunt"
+        ? spyHuntGenres
+        : gameType === "ng-word"
+          ? ngWordGenres
+          : topicGenres;
       el.topicGenreSelect.replaceChildren();
 
       for (const [value, label] of Object.entries(genreOptions)) {
@@ -3131,6 +3462,25 @@
       return pool;
     }
 
+    function getNgWordPool(topicGenre) {
+      const safeGenre = getValidNgWordGenre(topicGenre);
+      const words = safeGenre === "all"
+        ? Object.values(NG_WORD_SOURCE).flat()
+        : NG_WORD_SOURCE[safeGenre] || [];
+      return Array.from(new Set(words.map((word) => String(word || "").trim()).filter(Boolean)));
+    }
+
+    function assignNgWords(playerIds, topicGenre) {
+      const pool = shuffleArray(getNgWordPool(topicGenre));
+      const fallbackWords = ["NGワード"];
+      const source = pool.length ? pool : fallbackWords;
+      const result = {};
+      playerIds.forEach((playerId, index) => {
+        result[playerId] = source[index % source.length];
+      });
+      return result;
+    }
+
     function getRoomSettings(roomData) {
       const settings = roomData && roomData.settings ? roomData.settings : {};
       const gameType = getRoomGameType(roomData);
@@ -3150,6 +3500,12 @@
           timerSeconds: DEFAULT_TIMER_SECONDS,
           topicGenre: "日常",
           spyCount: 1
+        };
+      }
+      if (gameType === "ng-word") {
+        return {
+          timerSeconds: DEFAULT_TIMER_SECONDS,
+          topicGenre: "日常"
         };
       }
 
@@ -3172,9 +3528,16 @@
       return getRoomGameType(roomData) === "spyhunt";
     }
 
+    function isNgWordRoom(roomData) {
+      return getRoomGameType(roomData) === "ng-word";
+    }
+
     function getValidGenreForGame(gameType, topicGenre) {
       if (gameType === "spyhunt") {
         return getValidSpyHuntGenre(topicGenre);
+      }
+      if (gameType === "ng-word") {
+        return getValidNgWordGenre(topicGenre);
       }
       return getValidTopicGenre(topicGenre);
     }
@@ -3188,6 +3551,12 @@
     function getValidSpyHuntGenre(topicGenre) {
       const genre = String(topicGenre || "");
       if (spyHuntGenres[genre]) return genre;
+      return "all";
+    }
+
+    function getValidNgWordGenre(topicGenre) {
+      const genre = String(topicGenre || "");
+      if (ngWordGenres[genre]) return genre;
       return "all";
     }
 
@@ -3223,6 +3592,13 @@
       if (!playerId) return "未確定";
       const player = players && players[playerId];
       return player ? sanitizeNickname(player.name) || "名前なし" : "退出済み";
+    }
+
+    function getNgWordPlayerIds(roomData) {
+      const players = roomData && roomData.players ? roomData.players : {};
+      const ngWords = roomData && roomData.game && roomData.game.ngWords ? roomData.game.ngWords : {};
+      const ids = new Set([...Object.keys(players), ...Object.keys(ngWords)]);
+      return Array.from(ids).sort((leftId, rightId) => comparePlayersForTie(players, leftId, rightId));
     }
 
     function countVotes(players, votes) {
@@ -3289,6 +3665,23 @@
       };
     }
 
+    function buildNgWordResult(roomData) {
+      const players = roomData.players || {};
+      const game = roomData.game || {};
+      const eliminated = game.eliminated || {};
+      const activePlayerIds = getPlayerEntries(players).map(([playerId]) => playerId);
+      const survivorPlayerIds = activePlayerIds.filter((playerId) => !eliminated[playerId]);
+      const eliminatedPlayerIds = activePlayerIds.filter((playerId) => eliminated[playerId]);
+
+      return {
+        survivorPlayerIds,
+        eliminatedPlayerIds,
+        ngWords: game.ngWords || {},
+        winner: "ng-survivors",
+        revealedAt: serverTimestamp()
+      };
+    }
+
     function buildSpyHuntResult(roomData) {
       const players = roomData.players || {};
       const votes = roomData.votes || {};
@@ -3332,6 +3725,7 @@
       if (winner === "minority" || winner === "werewolf") return "人狼勝利";
       if (winner === "citizens") return "市民側勝利";
       if (winner === "spies") return "スパイ側勝利";
+      if (winner === "ng-survivors") return "生存者勝利";
       return "引き分け";
     }
 
@@ -3343,10 +3737,17 @@
       return spyHuntGenres[getValidSpyHuntGenre(topicGenre)] || "すべて";
     }
 
+    function getNgWordGenreLabel(topicGenre) {
+      return ngWordGenres[getValidNgWordGenre(topicGenre)] || "なんでも";
+    }
+
     function buildSettingsSummary(roomData, settings) {
       const hostNote = roomData && roomData.hostChangedAt ? " / ホスト変更済み" : "";
       if (isSpyHuntRoom(roomData)) {
         return `設定: ${formatSeconds(settings.timerSeconds)} / ${getSpyHuntGenreLabel(settings.topicGenre)} / スパイ${settings.spyCount}人 / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
+      }
+      if (isNgWordRoom(roomData)) {
+        return `設定: ${formatSeconds(settings.timerSeconds)} / ${getNgWordGenreLabel(settings.topicGenre)} / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
       }
       return `設定: ${formatSeconds(settings.timerSeconds)} / ${getGenreLabel(settings.topicGenre)} / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
     }
@@ -3384,14 +3785,14 @@
         stopTimer();
         state.timerKey = timerKey;
         state.timerInterval = window.setInterval(() => {
-          const remainingSeconds = updateTimerDisplay(startedAt, timerSeconds);
+          const remainingSeconds = updateTimerDisplay(startedAt, timerSeconds, roomData);
           if (remainingSeconds === 0 && state.timerInterval) {
             window.clearInterval(state.timerInterval);
             state.timerInterval = null;
           }
         }, 1000);
       }
-      const remainingSeconds = updateTimerDisplay(startedAt, timerSeconds);
+      const remainingSeconds = updateTimerDisplay(startedAt, timerSeconds, roomData);
       if (remainingSeconds === 0 && state.timerInterval) {
         window.clearInterval(state.timerInterval);
         state.timerInterval = null;
@@ -3406,7 +3807,7 @@
       };
     }
 
-    function updateTimerDisplay(startedAt, timerSeconds) {
+    function updateTimerDisplay(startedAt, timerSeconds, roomData = null) {
       if (!startedAt) {
         el.timerDisplay.textContent = formatRemainingSeconds(timerSeconds);
         el.timerStatus.textContent = "タイマーを準備しています。";
@@ -3416,9 +3817,13 @@
       const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
       const remainingSeconds = Math.max(0, timerSeconds - elapsedSeconds);
       el.timerDisplay.textContent = formatRemainingSeconds(remainingSeconds);
-      el.timerStatus.textContent = remainingSeconds === 0
-        ? "時間終了。投票に進んでください。"
-        : "話し合いタイム";
+      if (remainingSeconds === 0) {
+        el.timerStatus.textContent = isNgWordRoom(roomData)
+          ? "時間終了。ホストが結果発表してください。"
+          : "時間終了。投票に進んでください。";
+      } else {
+        el.timerStatus.textContent = "話し合いタイム";
+      }
       return remainingSeconds;
     }
 
@@ -3572,10 +3977,16 @@
       state.selectedGameType = safeGameType;
       writeStorage(storageKeys.selectedGameType, safeGameType);
       el.wordwolfScreen.classList.toggle("spyhunt-theme", safeGameType === "spyhunt");
+      el.wordwolfScreen.classList.toggle("ngword-theme", safeGameType === "ng-word");
       document.querySelector("#wordwolf-title").textContent = labels.title;
-      el.topicGenreLabel.textContent = safeGameType === "spyhunt" ? "場所ジャンル" : "お題ジャンル";
+      el.topicGenreLabel.textContent = safeGameType === "spyhunt"
+        ? "場所ジャンル"
+        : safeGameType === "ng-word"
+          ? "NGワードジャンル"
+          : "お題ジャンル";
       el.spyCountSetting.classList.toggle("is-hidden", safeGameType !== "spyhunt");
       el.startGameButton.textContent = `${labels.title}を開始`;
+      el.goVotingButton.textContent = safeGameType === "ng-word" ? "結果発表" : "投票へ進む";
       renderTopicGenreOptions();
       if (roomData) {
         const settings = getRoomSettings(roomData);
