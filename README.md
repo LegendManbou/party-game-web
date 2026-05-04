@@ -139,3 +139,8 @@ rooms/{roomCode}
 - 結果発表はホストが強制実行できるため、未投票者や未回答スパイがいても進行できます。
 - スパイ探しのお題データは `index.html` 内の静的データです。
 - NGワードゲームのNGワードデータは `index.html` 内の静的データです。
+
+## 制作
+
+- 制作: LegendManbou
+- https://x.com/LegendManbou
