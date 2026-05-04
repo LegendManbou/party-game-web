@@ -359,8 +359,8 @@
     }
 
     .compact-button {
-      min-height: 38px;
-      padding: 8px 10px;
+      min-height: 44px;
+      padding: 10px 12px;
       font-size: 0.86rem;
     }
 
@@ -596,15 +596,16 @@
 
     .ng-word-card {
       display: grid;
-      gap: 10px;
+      gap: 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 12px;
+      padding: 14px;
       background: #ffffff;
     }
 
     .ng-word-card.is-self {
       border-color: var(--accent);
+      border-width: 2px;
       background: #fffaf0;
     }
 
@@ -634,6 +635,16 @@
       font-size: 1.35rem;
       font-weight: 900;
       overflow-wrap: anywhere;
+    }
+
+    .ng-word-card .compact-button {
+      width: 100%;
+    }
+
+    .round-meta {
+      min-height: auto;
+      font-size: 0.9rem;
+      line-height: 1.45;
     }
 
     .timer-box {
@@ -798,6 +809,25 @@
     }
 
     @media (max-width: 640px) {
+      .view {
+        padding: 16px 14px 20px;
+      }
+
+      .player-item,
+      .ng-word-card,
+      .result-item {
+        padding: 13px;
+      }
+
+      .ng-word-card-header {
+        display: grid;
+        align-items: start;
+      }
+
+      .ng-word-value {
+        font-size: 1.16rem;
+      }
+
       .creator-footer {
         padding-bottom: 20px;
         font-size: 0.7rem;
@@ -927,6 +957,15 @@
                   <option value="all">すべて</option>
                 </select>
               </label>
+              <label id="ng-word-difficulty-setting" class="setting-field is-hidden">
+                難易度選択
+                <select id="ng-word-difficulty-select">
+                  <option value="easy">かんたん</option>
+                  <option value="normal" selected>ふつう</option>
+                  <option value="hard">むずかしい</option>
+                  <option value="oni">鬼</option>
+                </select>
+              </label>
               <label id="spy-count-setting" class="setting-field is-hidden">
                 スパイ人数
                 <select id="spy-count-select">
@@ -974,6 +1013,7 @@
               <div id="timer-display" class="timer-display">--:--</div>
               <div id="timer-status" class="hint">話し合いタイム</div>
             </div>
+            <div id="playing-settings-summary" class="status round-meta game-only is-hidden"></div>
 
             <div id="ng-word-board" class="question-box game-only is-hidden">
               <h3 class="view-title">NGワード一覧</h3>
@@ -1294,37 +1334,142 @@
       ...Object.fromEntries(Object.keys(SPYHUNT_LOCATION_SOURCE).map((genre) => [genre, genre]))
     };
 
-    const NG_WORD_SOURCE = {
-      "日常": [
-        "スマホ", "テレビ", "コンビニ", "駅", "電車", "バス", "財布", "鍵", "傘", "天気",
-        "雨", "洗濯", "掃除", "料理", "買い物", "仕事", "休日", "寝坊", "朝ごはん", "夜更かし",
-        "お風呂", "歯みがき", "電話", "写真", "散歩", "病院", "薬", "ニュース", "家族", "友達"
-      ],
-      "学校": [
-        "先生", "宿題", "テスト", "黒板", "教科書", "ノート", "鉛筆", "消しゴム", "給食", "部活",
-        "体育", "音楽", "図工", "理科", "社会", "国語", "数学", "英語", "校庭", "教室",
-        "図書室", "保健室", "廊下", "チャイム", "制服", "遠足", "修学旅行", "文化祭", "席替え", "卒業"
-      ],
-      "食べ物": [
-        "カレー", "ラーメン", "寿司", "焼肉", "ハンバーグ", "ピザ", "パスタ", "うどん", "そば", "パン",
-        "おにぎり", "唐揚げ", "餃子", "たこ焼き", "アイス", "ケーキ", "チョコ", "プリン", "りんご", "みかん",
-        "バナナ", "サラダ", "スープ", "卵", "牛乳", "コーヒー", "お茶", "ジュース", "ポテト", "味噌汁"
-      ],
-      "ゲーム": [
-        "コントローラー", "サイコロ", "カード", "ボードゲーム", "人狼", "マリオ", "ポケモン", "スプラトゥーン", "マイクラ", "フォートナイト",
-        "パズル", "クイズ", "レベル", "ボス", "セーブ", "ガチャ", "ランキング", "チーム", "対戦", "協力",
-        "ミッション", "ステージ", "アイテム", "装備", "魔法", "剣", "盾", "回復", "勝利", "敗北"
-      ],
-      "アニメ・漫画": [
-        "主人公", "ライバル", "ヒロイン", "必殺技", "変身", "魔法少女", "ロボット", "異世界", "冒険", "友情",
-        "修行", "師匠", "悪役", "最終回", "伏線", "名言", "声優", "オープニング", "エンディング", "映画化",
-        "単行本", "週刊誌", "アニメ化", "コスプレ", "学園", "バトル", "スポーツ", "ファンタジー", "探偵", "怪盗"
-      ]
+    const NG_WORD_BANK = {
+      daily: {
+        easy: [
+          "掃除", "洗濯", "風呂", "歯磨き", "着替え", "玄関", "布団", "枕", "カーテン", "窓",
+          "ゴミ箱", "冷蔵庫", "電子レンジ", "テーブル", "イス", "鍵", "財布", "時計", "充電器", "イヤホン",
+          "リモコン", "ティッシュ", "タオル", "傘", "靴"
+        ],
+        normal: [
+          "スマホ", "LINE", "YouTube", "電車", "バス", "コンビニ", "スーパー", "駅", "家", "部屋",
+          "朝", "昼", "夜", "昨日", "今日", "明日", "予定", "時間", "お金", "買い物",
+          "ご飯", "飲み物", "友達", "家族", "眠い", "起きる", "寝る", "遅刻", "休み", "忙しい",
+          "電話", "写真", "動画", "音楽", "ニュース"
+        ],
+        hard: [
+          "やばい", "すごい", "なるほど", "たぶん", "ほんと", "まあまあ", "普通", "ちょっと", "なんか", "けっこう",
+          "めっちゃ", "だるい", "えぐい", "いいね", "分かる", "それな", "うける", "まじ", "確かに", "逆に",
+          "一回", "とりあえず", "もう一回", "最近", "さっき"
+        ],
+        oni: [
+          "それ", "これ", "あれ", "え", "いや", "でも", "だから", "うん", "はい", "まじ",
+          "なんで", "どう", "何", "誰", "どこ"
+        ]
+      },
+      school: {
+        easy: [
+          "黒板", "白板", "チョーク", "教科書", "ノート", "筆箱", "消しゴム", "鉛筆", "シャーペン", "ボールペン",
+          "定規", "プリント", "ファイル", "ロッカー", "机", "椅子", "教室", "廊下", "体育館", "図書室",
+          "保健室", "校庭", "制服", "上履き", "リュック"
+        ],
+        normal: [
+          "先生", "授業", "宿題", "課題", "テスト", "小テスト", "レポート", "発表", "出席", "欠席",
+          "遅刻", "早退", "休講", "時間割", "1限", "2限", "3限", "4限", "5限", "大学",
+          "高校", "中学", "友達", "クラス", "グループ", "勉強", "英語", "数学", "国語", "情報",
+          "単位", "成績", "提出", "締切", "教室"
+        ],
+        hard: [
+          "分からない", "めんどい", "終わった", "きつい", "むずい", "簡単", "眠い", "だるい", "忘れた", "やった",
+          "まだ", "もう", "たぶん", "ここ", "そこ", "どこ", "何ページ", "先生が", "課題が", "テストが",
+          "提出した", "出してない", "教えて", "見せて", "助けて"
+        ],
+        oni: [
+          "はい", "え", "あの", "これ", "それ", "どれ", "なんか", "まじ", "やばい", "普通",
+          "分かる", "分からん", "たしかに", "いや", "でも"
+        ]
+      },
+      food: {
+        easy: [
+          "寿司", "ラーメン", "カレー", "パスタ", "うどん", "そば", "ピザ", "ハンバーガー", "サンドイッチ", "オムライス",
+          "チャーハン", "焼きそば", "たこ焼き", "お好み焼き", "唐揚げ", "とんかつ", "焼肉", "しゃぶしゃぶ", "鍋", "味噌汁",
+          "納豆", "豆腐", "卵焼き", "サラダ", "グラタン"
+        ],
+        normal: [
+          "ご飯", "パン", "肉", "魚", "野菜", "果物", "お菓子", "チョコ", "アイス", "ケーキ",
+          "プリン", "ヨーグルト", "牛乳", "お茶", "水", "ジュース", "コーラ", "コーヒー", "紅茶", "朝ごはん",
+          "昼ごはん", "夜ごはん", "コンビニ飯", "弁当", "外食", "自炊", "マック", "スタバ", "ファミレス", "焼き鳥",
+          "ポテト", "スープ", "辛い", "甘い", "しょっぱい"
+        ],
+        hard: [
+          "おいしい", "まずい", "食べたい", "飲みたい", "お腹すいた", "満腹", "いただきます", "ごちそうさま", "好き", "嫌い",
+          "熱い", "冷たい", "多い", "少ない", "もう一個", "一口", "何食べる", "これ食べる", "あれ食べる", "それ食べる",
+          "おすすめ", "いつもの", "大盛り", "普通盛り", "安い"
+        ],
+        oni: [
+          "うまい", "やばい", "まじ", "これ", "それ", "あれ", "何", "どれ", "いい", "好き",
+          "食べる", "飲む", "お腹", "普通", "ちょっと"
+        ]
+      },
+      game: {
+        easy: [
+          "コントローラー", "キーボード", "マウス", "画面", "ボタン", "スティック", "セーブ", "ロード", "ステージ", "マップ",
+          "アイテム", "武器", "防具", "魔法", "スキル", "レベル", "経験値", "ボス", "敵", "味方",
+          "クエスト", "ダンジョン", "ガチャ", "チュートリアル", "ランキング"
+        ],
+        normal: [
+          "ゲーム", "スマホゲーム", "Switch", "プレステ", "パソコン", "Steam", "マイクラ", "スプラ", "ポケモン", "マリオ",
+          "フォートナイト", "Apex", "原神", "プロセカ", "モンハン", "ゼルダ", "Among Us", "ガーティックフォン", "ワードウルフ", "人狼",
+          "勝ち", "負け", "協力", "対戦", "練習", "初心者", "上手い", "下手", "ラグい", "回線",
+          "フレンド", "パーティー", "ボイスチャット", "配信", "クリア"
+        ],
+        hard: [
+          "強い", "弱い", "むずい", "簡単", "もう一回", "次やろう", "それずるい", "なんで", "どこ", "こっち",
+          "あっち", "敵いる", "助けて", "やられた", "勝てる", "負けた", "ナイス", "ごめん", "待って", "行く",
+          "来た", "逃げる", "攻める", "守る", "回復"
+        ],
+        oni: [
+          "やばい", "まじ", "それ", "これ", "あれ", "どこ", "何", "いる", "いない", "待って",
+          "無理", "ナイス", "ごめん", "え", "いや"
+        ]
+      },
+      anime: {
+        easy: [
+          "主人公", "ヒロイン", "ライバル", "敵キャラ", "仲間", "先生キャラ", "能力", "必殺技", "変身", "魔法",
+          "剣", "ロボット", "学園", "異世界", "冒険", "バトル", "恋愛", "日常", "ギャグ", "感動",
+          "伏線", "最終回", "映画", "原作", "アニメ化"
+        ],
+        normal: [
+          "アニメ", "漫画", "推し", "キャラ", "声優", "主題歌", "OP", "ED", "作画", "神回",
+          "最新話", "ネタバレ", "単行本", "ジャンプ", "マガジン", "コナン", "ワンピース", "呪術廻戦", "鬼滅", "ヒロアカ",
+          "プロセカ", "初音ミク", "こはね", "えな", "冬弥", "司", "まふゆ", "類", "寧々", "杏",
+          "好きなキャラ", "好きな作品", "泣ける", "面白い", "かっこいい"
+        ],
+        hard: [
+          "見た", "読んだ", "知ってる", "知らない", "好き", "嫌い", "推せる", "尊い", "かわいい", "かっこいい",
+          "強い", "弱い", "やばい", "神", "最高", "つらい", "泣いた", "笑った", "分かる", "それな",
+          "誰推し", "何話", "どのシーン", "見たい", "読みたい"
+        ],
+        oni: [
+          "それ", "これ", "あれ", "誰", "何", "好き", "やばい", "まじ", "分かる", "いい",
+          "神", "推し", "見る", "読む", "かわいい"
+        ]
+      }
     };
 
     const ngWordGenres = {
-      all: "なんでも",
-      ...Object.fromEntries(Object.keys(NG_WORD_SOURCE).map((genre) => [genre, genre]))
+      daily: "日常",
+      school: "学校",
+      food: "食べ物",
+      game: "ゲーム",
+      anime: "アニメ・漫画",
+      all: "なんでも"
+    };
+
+    const ngWordGenreAliases = {
+      "日常": "daily",
+      "学校": "school",
+      "食べ物": "food",
+      "ゲーム": "game",
+      "アニメ・漫画": "anime",
+      "なんでも": "all"
+    };
+
+    const ngWordDifficulties = {
+      easy: "かんたん",
+      normal: "ふつう",
+      hard: "むずかしい",
+      oni: "鬼"
     };
 
     const questionSeedStorageKey = "party-game-web.spyhunt.questionSeed";
@@ -1928,6 +2073,8 @@
       timerSelect: document.querySelector("#timer-select"),
       topicGenreSelect: document.querySelector("#topic-genre-select"),
       topicGenreLabel: document.querySelector("#topic-genre-label"),
+      ngWordDifficultySetting: document.querySelector("#ng-word-difficulty-setting"),
+      ngWordDifficultySelect: document.querySelector("#ng-word-difficulty-select"),
       spyCountSetting: document.querySelector("#spy-count-setting"),
       spyCountSelect: document.querySelector("#spy-count-select"),
       createRoomButton: document.querySelector("#create-room-button"),
@@ -1959,6 +2106,7 @@
       settingsSummary: document.querySelector("#settings-summary"),
       timerDisplay: document.querySelector("#timer-display"),
       timerStatus: document.querySelector("#timer-status"),
+      playingSettingsSummary: document.querySelector("#playing-settings-summary"),
       waitingPlayerList: document.querySelector("#waiting-player-list"),
       playingPlayerList: document.querySelector("#playing-player-list"),
       votingPlayerList: document.querySelector("#voting-player-list"),
@@ -2051,6 +2199,7 @@
       el.leaveRoomButtons.forEach((button) => button.addEventListener("click", leaveRoom));
       el.timerSelect.addEventListener("change", saveSettings);
       el.topicGenreSelect.addEventListener("change", saveSettings);
+      el.ngWordDifficultySelect.addEventListener("change", saveSettings);
       el.spyCountSelect.addEventListener("change", saveSettings);
       el.submitSpyVoteButton.addEventListener("click", submitSpyVote);
       el.refreshQuestionButton.addEventListener("click", refreshQuestionExamples);
@@ -2321,6 +2470,7 @@
       el.shareUrl.textContent = getShareUrl(state.roomCode);
       el.timerSelect.value = String(settings.timerSeconds);
       el.topicGenreSelect.value = settings.topicGenre;
+      el.ngWordDifficultySelect.value = settings.ngWordDifficulty;
       renderSpyCountOptions(players, settings.spyCount);
       el.spyCountSelect.value = String(settings.spyCount);
       el.settingsSummary.textContent = buildSettingsSummary(roomData, settings);
@@ -2375,6 +2525,7 @@
       el.spyCandidateBox.classList.add("is-hidden");
       el.questionBox.classList.add("is-hidden");
       el.ngWordBoard.classList.add("is-hidden");
+      el.playingSettingsSummary.classList.add("is-hidden");
 
       showWordwolfView("playing");
       setStatus(el.playingStatus, "");
@@ -2406,6 +2557,7 @@
 
       el.roleCardNote.textContent = "他の人に見せないでください";
       el.ngWordBoard.classList.add("is-hidden");
+      el.playingSettingsSummary.classList.add("is-hidden");
       renderQuestionExamples(roomData);
       el.questionBox.classList.remove("is-hidden");
       showWordwolfView("playing");
@@ -2414,6 +2566,7 @@
     }
 
     function renderNgWordPlayingView(roomData) {
+      const settings = getRoomSettings(roomData);
       el.roleCard.classList.remove("spy-card");
       el.roleCard.classList.add("ng-card");
       el.myRoleLabel.textContent = "あなたのNGワード";
@@ -2423,6 +2576,8 @@
       el.spyCandidateBox.classList.add("is-hidden");
       el.questionBox.classList.add("is-hidden");
       el.ngWordBoard.classList.remove("is-hidden");
+      el.playingSettingsSummary.textContent = buildNgWordRoundSummary(roomData, settings);
+      el.playingSettingsSummary.classList.remove("is-hidden");
       renderNgWordCards(roomData);
       showWordwolfView("playing");
       setStatus(el.playingStatus, "");
@@ -2448,7 +2603,7 @@
 
       for (const [playerId] of entries) {
         const isSelf = playerId === state.playerId;
-        const isEliminated = Boolean(eliminated[playerId]);
+        const isEliminated = isNgWordEliminated(eliminated, playerId);
         const item = document.createElement("li");
         item.className = "ng-word-card";
         item.classList.toggle("is-self", isSelf);
@@ -2767,11 +2922,14 @@
       const game = roomData.game || {};
       const result = roomData.result || buildNgWordResult(roomData);
       const ngWords = result.ngWords || game.ngWords || {};
+      const eliminationReasons = result.eliminationReasons || {};
+      const eliminatedSet = new Set(result.eliminatedPlayerIds || []);
+      const playerIds = result.allPlayerIds || getNgWordPlayerIds(roomData);
       const survivorNames = (result.survivorPlayerIds || [])
-        .map((playerId) => getPlayerName(players, playerId))
+        .map((playerId) => getNgWordResultPlayerName(players, result, playerId))
         .join("、") || "なし";
       const eliminatedNames = (result.eliminatedPlayerIds || [])
-        .map((playerId) => getPlayerName(players, playerId))
+        .map((playerId) => getNgWordResultPlayerName(players, result, playerId))
         .join("、") || "なし";
 
       el.resultMajorityLabel.textContent = "勝者";
@@ -2785,20 +2943,27 @@
       el.resultSummary.textContent = "時間終了時または結果発表時に生存していたプレイヤーが勝者です。";
 
       el.resultVoteList.replaceChildren();
-      for (const text of [`勝者: ${survivorNames}`, `脱落者: ${eliminatedNames}`]) {
-        const item = document.createElement("li");
-        item.className = "result-item";
-        item.textContent = text;
-        el.resultVoteList.append(item);
+      appendResultText(el.resultVoteList, `勝者: ${survivorNames}`);
+      if ((result.eliminatedPlayerIds || []).length) {
+        for (const playerId of result.eliminatedPlayerIds) {
+          const reason = eliminationReasons[playerId] ? ` / 理由: ${eliminationReasons[playerId]}` : "";
+          appendResultText(
+            el.resultVoteList,
+            `脱落者: ${getNgWordResultPlayerName(players, result, playerId)}: NGワード「${ngWords[playerId] || "未設定"}」${reason}`
+          );
+        }
+      } else {
+        appendResultText(el.resultVoteList, "脱落者: なし");
       }
 
       el.resultCountList.replaceChildren();
-      const playerIds = getNgWordPlayerIds(roomData);
       for (const playerId of playerIds) {
-        const item = document.createElement("li");
-        item.className = "result-item";
-        item.textContent = `${getPlayerName(players, playerId)}: ${ngWords[playerId] || "未設定"}`;
-        el.resultCountList.append(item);
+        const isEliminated = eliminatedSet.has(playerId);
+        const reason = eliminationReasons[playerId] ? ` / 理由: ${eliminationReasons[playerId]}` : "";
+        appendResultText(
+          el.resultCountList,
+          `${getNgWordResultPlayerName(players, result, playerId)}: ${isEliminated ? "脱落" : "生存"} / NGワード「${ngWords[playerId] || "未設定"}」${reason}`
+        );
       }
       if (!el.resultCountList.children.length) {
         const item = document.createElement("li");
@@ -2809,6 +2974,13 @@
 
       showWordwolfView("results");
       setStatus(el.resultsStatus, "");
+    }
+
+    function appendResultText(listElement, text) {
+      const item = document.createElement("li");
+      item.className = "result-item";
+      item.textContent = text;
+      listElement.append(item);
     }
 
     function renderSpyHuntResultsView(roomData) {
@@ -2986,7 +3158,7 @@
 
     async function beginNgWordRound(playerIds, roundNumber) {
       const settings = getRoomSettings(state.roomData);
-      const ngWords = assignNgWords(playerIds, settings.topicGenre);
+      const ngWords = assignNgWords(playerIds, settings.topicGenre, settings.ngWordDifficulty);
 
       await update(ref(state.db, `rooms/${state.roomCode}`), {
         status: "playing",
@@ -2999,6 +3171,7 @@
           ngWords,
           eliminated: {},
           genre: settings.topicGenre,
+          difficulty: settings.ngWordDifficulty,
           startedAt: serverTimestamp(),
           timerSeconds: settings.timerSeconds,
           roundNumber
@@ -3282,6 +3455,7 @@
       const timerSeconds = Number(el.timerSelect.value) || DEFAULT_TIMER_SECONDS;
       const gameType = getRoomGameType(state.roomData);
       const topicGenre = getValidGenreForGame(gameType, el.topicGenreSelect.value);
+      const ngWordDifficulty = getValidNgWordDifficulty(el.ngWordDifficultySelect.value);
       const spyCount = gameType === "spyhunt"
         ? clampSpyCount(Number(el.spyCountSelect.value), getPlayerEntries(state.roomData.players || {}).length)
         : null;
@@ -3289,6 +3463,10 @@
       try {
         const settingsUpdate = { timerSeconds, topicGenre };
         if (gameType === "spyhunt") settingsUpdate.spyCount = spyCount;
+        if (gameType === "ng-word") {
+          settingsUpdate.ngWordGenre = topicGenre;
+          settingsUpdate.ngWordDifficulty = ngWordDifficulty;
+        }
         await update(ref(state.db, `rooms/${state.roomCode}/settings`), settingsUpdate);
       } catch (error) {
         setStatus(el.waitingStatus, `設定を保存できませんでした: ${error.message}`, "error");
@@ -3495,16 +3673,19 @@
       return pool;
     }
 
-    function getNgWordPool(topicGenre) {
+    function getNgWordPool(topicGenre, difficulty) {
       const safeGenre = getValidNgWordGenre(topicGenre);
+      const safeDifficulty = getValidNgWordDifficulty(difficulty);
       const words = safeGenre === "all"
-        ? Object.values(NG_WORD_SOURCE).flat()
-        : NG_WORD_SOURCE[safeGenre] || [];
+        ? Object.values(NG_WORD_BANK).flatMap((genreBank) => genreBank[safeDifficulty] || [])
+        : NG_WORD_BANK[safeGenre] && NG_WORD_BANK[safeGenre][safeDifficulty]
+          ? NG_WORD_BANK[safeGenre][safeDifficulty]
+          : [];
       return Array.from(new Set(words.map((word) => String(word || "").trim()).filter(Boolean)));
     }
 
-    function assignNgWords(playerIds, topicGenre) {
-      const pool = shuffleArray(getNgWordPool(topicGenre));
+    function assignNgWords(playerIds, topicGenre, difficulty) {
+      const pool = shuffleArray(getNgWordPool(topicGenre, difficulty));
       const fallbackWords = ["NGワード"];
       const source = pool.length ? pool : fallbackWords;
       const result = {};
@@ -3520,11 +3701,14 @@
       const timerSeconds = [60, 180, 300, 600].includes(Number(settings.timerSeconds))
         ? Number(settings.timerSeconds)
         : DEFAULT_TIMER_SECONDS;
-      const topicGenre = getValidGenreForGame(gameType, settings.topicGenre);
+      const topicGenre = gameType === "ng-word"
+        ? getValidNgWordGenre(settings.ngWordGenre || settings.topicGenre)
+        : getValidGenreForGame(gameType, settings.topicGenre);
+      const ngWordDifficulty = getValidNgWordDifficulty(settings.ngWordDifficulty);
       const spyCount = gameType === "spyhunt"
         ? clampSpyCount(settings.spyCount, getPlayerEntries(roomData && roomData.players ? roomData.players : {}).length)
         : 1;
-      return { timerSeconds, topicGenre, spyCount };
+      return { timerSeconds, topicGenre, spyCount, ngWordGenre: topicGenre, ngWordDifficulty };
     }
 
     function getDefaultSettingsForGame(gameType) {
@@ -3538,7 +3722,9 @@
       if (gameType === "ng-word") {
         return {
           timerSeconds: DEFAULT_TIMER_SECONDS,
-          topicGenre: "日常"
+          topicGenre: "daily",
+          ngWordGenre: "daily",
+          ngWordDifficulty: "normal"
         };
       }
 
@@ -3588,9 +3774,15 @@
     }
 
     function getValidNgWordGenre(topicGenre) {
-      const genre = String(topicGenre || "");
+      const genre = ngWordGenreAliases[String(topicGenre || "")] || String(topicGenre || "");
       if (ngWordGenres[genre]) return genre;
       return "all";
+    }
+
+    function getValidNgWordDifficulty(difficulty) {
+      const normalizedDifficulty = String(difficulty || "");
+      if (ngWordDifficulties[normalizedDifficulty]) return normalizedDifficulty;
+      return "normal";
     }
 
     function normalizeTopicGenre(topicGenre) {
@@ -3627,11 +3819,31 @@
       return player ? sanitizeNickname(player.name) || "名前なし" : "退出済み";
     }
 
+    function getNgWordResultPlayerName(players, result, playerId) {
+      const savedNames = result && result.playerNames ? result.playerNames : {};
+      return savedNames[playerId] || getPlayerName(players, playerId);
+    }
+
     function getNgWordPlayerIds(roomData) {
       const players = roomData && roomData.players ? roomData.players : {};
       const ngWords = roomData && roomData.game && roomData.game.ngWords ? roomData.game.ngWords : {};
       const ids = new Set([...Object.keys(players), ...Object.keys(ngWords)]);
       return Array.from(ids).sort((leftId, rightId) => comparePlayersForTie(players, leftId, rightId));
+    }
+
+    function isNgWordEliminated(eliminated, playerId) {
+      const entry = eliminated && eliminated[playerId];
+      if (!entry) return false;
+      if (typeof entry === "object") return entry.eliminated !== false;
+      return Boolean(entry);
+    }
+
+    function getNgWordEliminationReason(eliminated, playerId) {
+      const entry = eliminated && eliminated[playerId];
+      if (!entry) return "";
+      if (typeof entry === "object") return String(entry.reason || "").trim();
+      if (typeof entry === "string" && entry !== "true") return entry.trim();
+      return "";
     }
 
     function countVotes(players, votes) {
@@ -3702,14 +3914,27 @@
       const players = roomData.players || {};
       const game = roomData.game || {};
       const eliminated = game.eliminated || {};
-      const activePlayerIds = getPlayerEntries(players).map(([playerId]) => playerId);
-      const survivorPlayerIds = activePlayerIds.filter((playerId) => !eliminated[playerId]);
-      const eliminatedPlayerIds = activePlayerIds.filter((playerId) => eliminated[playerId]);
+      const allPlayerIds = getNgWordPlayerIds(roomData);
+      const survivorPlayerIds = allPlayerIds.filter((playerId) => !isNgWordEliminated(eliminated, playerId));
+      const eliminatedPlayerIds = allPlayerIds.filter((playerId) => isNgWordEliminated(eliminated, playerId));
+      const playerNames = {};
+      const eliminationReasons = {};
+
+      for (const playerId of allPlayerIds) {
+        playerNames[playerId] = getPlayerName(players, playerId);
+        const reason = getNgWordEliminationReason(eliminated, playerId);
+        if (reason) eliminationReasons[playerId] = reason;
+      }
 
       return {
+        allPlayerIds,
         survivorPlayerIds,
         eliminatedPlayerIds,
         ngWords: game.ngWords || {},
+        playerNames,
+        eliminationReasons,
+        genre: game.genre || getRoomSettings(roomData).topicGenre,
+        difficulty: game.difficulty || getRoomSettings(roomData).ngWordDifficulty,
         winner: "ng-survivors",
         revealedAt: serverTimestamp()
       };
@@ -3774,13 +3999,24 @@
       return ngWordGenres[getValidNgWordGenre(topicGenre)] || "なんでも";
     }
 
+    function getNgWordDifficultyLabel(difficulty) {
+      return ngWordDifficulties[getValidNgWordDifficulty(difficulty)] || "ふつう";
+    }
+
+    function buildNgWordRoundSummary(roomData, settings, isTimeUp = false) {
+      const game = roomData.game || {};
+      const genre = game.genre || settings.topicGenre;
+      const difficulty = game.difficulty || settings.ngWordDifficulty;
+      return `ジャンル: ${getNgWordGenreLabel(genre)} / 難易度: ${getNgWordDifficultyLabel(difficulty)} / 状態: ${isTimeUp ? "時間終了" : "会話中"}`;
+    }
+
     function buildSettingsSummary(roomData, settings) {
       const hostNote = roomData && roomData.hostChangedAt ? " / ホスト変更済み" : "";
       if (isSpyHuntRoom(roomData)) {
         return `設定: ${formatSeconds(settings.timerSeconds)} / ${getSpyHuntGenreLabel(settings.topicGenre)} / スパイ${settings.spyCount}人 / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
       }
       if (isNgWordRoom(roomData)) {
-        return `設定: ${formatSeconds(settings.timerSeconds)} / ${getNgWordGenreLabel(settings.topicGenre)} / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
+        return `設定: ${formatSeconds(settings.timerSeconds)} / ${getNgWordGenreLabel(settings.topicGenre)} / ${getNgWordDifficultyLabel(settings.ngWordDifficulty)} / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
       }
       return `設定: ${formatSeconds(settings.timerSeconds)} / ${getGenreLabel(settings.topicGenre)} / ホスト: ${getPlayerName(roomData.players || {}, roomData.hostId)}${hostNote}`;
     }
@@ -3856,6 +4092,9 @@
           : "時間終了。投票に進んでください。";
       } else {
         el.timerStatus.textContent = "話し合いタイム";
+      }
+      if (isNgWordRoom(roomData)) {
+        el.playingSettingsSummary.textContent = buildNgWordRoundSummary(roomData, getRoomSettings(roomData), remainingSeconds === 0);
       }
       return remainingSeconds;
     }
@@ -4018,12 +4257,14 @@
           ? "NGワードジャンル"
           : "お題ジャンル";
       el.spyCountSetting.classList.toggle("is-hidden", safeGameType !== "spyhunt");
+      el.ngWordDifficultySetting.classList.toggle("is-hidden", safeGameType !== "ng-word");
       el.startGameButton.textContent = `${labels.title}を開始`;
       el.goVotingButton.textContent = safeGameType === "ng-word" ? "結果発表" : "投票へ進む";
       renderTopicGenreOptions();
       if (roomData) {
         const settings = getRoomSettings(roomData);
         el.topicGenreSelect.value = settings.topicGenre;
+        el.ngWordDifficultySelect.value = settings.ngWordDifficulty;
         renderSpyCountOptions(roomData.players || {}, settings.spyCount);
       }
     }

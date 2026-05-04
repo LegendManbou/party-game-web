@@ -20,10 +20,11 @@ Firebase Realtime Databaseで同期して遊べる、GitHub Pages向けの静的
 
 1. トップ画面で「NGワードゲーム」を選びます。
 2. ホストが部屋を作り、共有URLまたは部屋コードで参加者を集めます。
-3. ホストが制限時間とNGワードジャンルを設定して開始します。
-4. 各プレイヤーは他の人のNGワードを見ながら、自分のNGワードを言わないように会話します。
+3. ホストが制限時間、NGワードジャンル、難易度を設定して開始します。
+4. 各プレイヤーは他の人のNGワードを見ながら、自分のNGワードを言わないように会話します。自分のNGワードはゲーム中は表示されません。
 5. 誰かが自分のNGワードを言ったら、ホストがその人を「脱落にする」で同期します。
 6. 時間終了後、または任意のタイミングでホストが結果発表します。
+7. 結果画面では全員のNGワードと生存/脱落状態が公開されます。
 
 ## NGワードゲームの勝利条件
 
@@ -57,6 +58,7 @@ Firebase Realtime Databaseで同期して遊べる、GitHub Pages向けの静的
 - 話し合い時間: 1分、3分、5分、10分
 - 場所ジャンル: 日常、学校、お店、旅行、ファンタジー、すべて
 - NGワードジャンル: 日常、学校、食べ物、ゲーム、アニメ・漫画、なんでも
+- NGワード難易度: かんたん、ふつう、むずかしい、鬼
 - スパイ人数:
   - 初期値は1人
   - 3〜5人は1人
@@ -75,6 +77,8 @@ rooms/{roomCode}
   settings
     timerSeconds
     topicGenre
+    ngWordGenre
+    ngWordDifficulty
     spyCount
   players/{playerId}
     name
@@ -85,6 +89,7 @@ rooms/{roomCode}
     ngWords/{playerId}
     eliminated/{playerId}
     genre
+    difficulty
     startedAt
     timerSeconds
     roundNumber
@@ -104,6 +109,12 @@ rooms/{roomCode}
     location
     guessedAt
   result
+    allPlayerIds
+    survivorPlayerIds
+    eliminatedPlayerIds
+    ngWords/{playerId}
+    playerNames/{playerId}
+    eliminationReasons/{playerId}
     suspectedPlayerIds
     voteCounts
     allSpiesFoundByVote
@@ -129,8 +140,10 @@ rooms/{roomCode}
 4. スパイ探しを選び、部屋作成、複数プレイヤー参加、ホスト設定、開始ができることを確認します。
 5. 一般人には場所と役職、スパイには候補場所リストが表示されることを確認します。
 6. 投票、スパイの場所当て、結果発表、次のラウンドが動くことを確認します。
-7. NGワードゲームを選び、他人のNGワード表示、自分のNGワード非表示、ホストだけの脱落操作、結果発表、次のラウンドが動くことを確認します。
-8. 退出、ホスト退出後のホスト変更、スマホ幅表示を確認します。
+7. NGワードゲームを選び、ホストだけがジャンルと難易度を変更できることを確認します。
+8. 選んだジャンルと難易度に応じてNGワードが割り当てられ、他人のNGワード表示、自分のNGワード非表示、ホストだけの脱落操作が動くことを確認します。
+9. 結果画面で勝者、脱落者、全員のNGワードが公開されることを確認します。
+10. 退出、ホスト退出後のホスト変更、スマホ幅表示を確認します。
 
 ## 現時点の制限事項
 
