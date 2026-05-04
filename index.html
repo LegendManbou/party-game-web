@@ -2666,6 +2666,9 @@
           genre: locationData.genre,
           location: locationData.location,
           locationId: locationData.id,
+          startedAt: serverTimestamp(),
+          timerSeconds: settings.timerSeconds,
+          roundNumber,
           roles,
           spyIds,
           candidateLocations,
@@ -3326,24 +3329,42 @@
     }
 
     function startTimer(roomData) {
-      const game = roomData.game || {};
-      const startedAt = Number(game.startedAt) || 0;
-      const timerSeconds = Number(game.timerSeconds) || getRoomSettings(roomData).timerSeconds;
+      const timer = getDiscussionTimer(roomData);
+      const startedAt = timer.startedAt;
+      const timerSeconds = timer.timerSeconds;
       const timerKey = `${startedAt}-${timerSeconds}`;
 
       if (state.timerKey !== timerKey) {
         stopTimer();
         state.timerKey = timerKey;
-        state.timerInterval = window.setInterval(() => updateTimerDisplay(startedAt, timerSeconds), 1000);
+        state.timerInterval = window.setInterval(() => {
+          const remainingSeconds = updateTimerDisplay(startedAt, timerSeconds);
+          if (remainingSeconds === 0 && state.timerInterval) {
+            window.clearInterval(state.timerInterval);
+            state.timerInterval = null;
+          }
+        }, 1000);
       }
-      updateTimerDisplay(startedAt, timerSeconds);
+      const remainingSeconds = updateTimerDisplay(startedAt, timerSeconds);
+      if (remainingSeconds === 0 && state.timerInterval) {
+        window.clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function getDiscussionTimer(roomData) {
+      const source = isSpyHuntRoom(roomData) ? roomData.spyHunt || {} : roomData.game || {};
+      return {
+        startedAt: Number(source.startedAt) || 0,
+        timerSeconds: Number(source.timerSeconds) || getRoomSettings(roomData).timerSeconds
+      };
     }
 
     function updateTimerDisplay(startedAt, timerSeconds) {
       if (!startedAt) {
         el.timerDisplay.textContent = formatRemainingSeconds(timerSeconds);
         el.timerStatus.textContent = "タイマーを準備しています。";
-        return;
+        return timerSeconds;
       }
 
       const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
@@ -3352,6 +3373,7 @@
       el.timerStatus.textContent = remainingSeconds === 0
         ? "時間終了。投票に進んでください。"
         : "話し合いタイム";
+      return remainingSeconds;
     }
 
     function stopTimer() {
