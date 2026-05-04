@@ -467,7 +467,7 @@
       <h2 id="home-title" class="section-title">ゲーム一覧</h2>
       <div class="game-list" aria-label="ゲーム一覧">
         <article class="game-card" data-game-id="wordwolf">
-          <h3>同期ワードウルフ</h3>
+          <h3>ワードウルフ</h3>
           <p>友達と同じURLから参加して遊べるワードウルフ</p>
           <button id="open-wordwolf-button" type="button">このゲームで遊ぶ</button>
         </article>
@@ -478,7 +478,7 @@
       <div class="play-surface">
         <div class="play-header">
           <div>
-            <h2 id="wordwolf-title" class="view-title">同期ワードウルフ</h2>
+            <h2 id="wordwolf-title" class="view-title">ワードウルフ</h2>
             <div class="phase-row">
               <span id="phase-label" class="badge">待機中</span>
               <span id="round-label" class="hint">Round 1</span>
@@ -553,11 +553,6 @@
                 お題ジャンル
                 <select id="topic-genre-select">
                   <option value="all">すべて</option>
-                  <option value="food">食べ物</option>
-                  <option value="school">学校</option>
-                  <option value="play">遊び</option>
-                  <option value="life">生活</option>
-                  <option value="anime_game">アニメ・ゲーム</option>
                 </select>
               </label>
             </div>
@@ -607,7 +602,7 @@
 
         <div id="voting-view" class="view">
           <div class="stack">
-            <div class="status">投票中です。少数派だと思う人を選んでください。</div>
+            <div class="status">投票中です。人狼だと思う人を選んでください。</div>
 
             <div>
               <h3 class="view-title">投票</h3>
@@ -640,11 +635,11 @@
 
             <div class="result-word-grid">
               <div class="result-word">
-                <span class="hint">多数派ワード</span>
+                <span class="hint">市民のお題</span>
                 <strong id="result-majority-word">-</strong>
               </div>
               <div class="result-word">
-                <span class="hint">少数派ワード</span>
+                <span class="hint">人狼のお題</span>
                 <strong id="result-minority-word">-</strong>
               </div>
             </div>
@@ -652,7 +647,8 @@
             <div id="winner-box" class="topic-box">
               <p class="topic-label">勝敗</p>
               <p id="winner-text" class="topic-word">-</p>
-              <strong id="minority-player-name">少数派: -</strong>
+              <p id="result-summary" class="hint">-</p>
+              <strong id="minority-player-name">人狼: -</strong>
             </div>
 
             <div>
@@ -705,15 +701,6 @@
     const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const DEFAULT_TIMER_SECONDS = 180;
 
-    const topicGenres = {
-      all: "すべて",
-      food: "食べ物",
-      school: "学校",
-      play: "遊び",
-      life: "生活",
-      anime_game: "アニメ・ゲーム"
-    };
-
     const phaseLabels = {
       waiting: "待機中",
       playing: "話し合い中",
@@ -723,36 +710,539 @@
 
     // Later games can be added here and connected to cards in the game list.
     const games = [
-      { id: "wordwolf", title: "同期ワードウルフ" }
+      { id: "wordwolf", title: "ワードウルフ" }
     ];
 
-    const topicSets = [
-      { genre: "food", majority: "カレー", minority: "ラーメン" },
-      { genre: "food", majority: "寿司", minority: "焼肉" },
-      { genre: "food", majority: "コーヒー", minority: "紅茶" },
-      { genre: "food", majority: "ハンバーガー", minority: "ピザ" },
-      { genre: "food", majority: "アイス", minority: "プリン" },
-      { genre: "school", majority: "数学", minority: "理科" },
-      { genre: "school", majority: "給食", minority: "弁当" },
-      { genre: "school", majority: "体育館", minority: "運動場" },
-      { genre: "school", majority: "テスト", minority: "宿題" },
-      { genre: "school", majority: "先生", minority: "先輩" },
-      { genre: "play", majority: "海", minority: "プール" },
-      { genre: "play", majority: "映画館", minority: "カラオケ" },
-      { genre: "play", majority: "遊園地", minority: "水族館" },
-      { genre: "play", majority: "ボウリング", minority: "ダーツ" },
-      { genre: "play", majority: "キャンプ", minority: "旅行" },
-      { genre: "life", majority: "犬", minority: "猫" },
-      { genre: "life", majority: "夏", minority: "冬" },
-      { genre: "life", majority: "電車", minority: "バス" },
-      { genre: "life", majority: "朝ごはん", minority: "夜食" },
-      { genre: "life", majority: "コンビニ", minority: "スーパー" },
-      { genre: "anime_game", majority: "勇者", minority: "魔王" },
-      { genre: "anime_game", majority: "ポケモン", minority: "デジモン" },
-      { genre: "anime_game", majority: "マリオ", minority: "ソニック" },
-      { genre: "anime_game", majority: "アニメ", minority: "漫画" },
-      { genre: "anime_game", majority: "RPG", minority: "アクションゲーム" }
-    ];
+    const TOPIC_SETS = {
+      "食べ物": [
+        ["カレー", "ハヤシライス"],
+        ["ラーメン", "うどん"],
+        ["そば", "うどん"],
+        ["寿司", "刺身"],
+        ["焼き肉", "ステーキ"],
+        ["唐揚げ", "フライドチキン"],
+        ["ハンバーガー", "サンドイッチ"],
+        ["ピザ", "グラタン"],
+        ["チャーハン", "ピラフ"],
+        ["オムライス", "親子丼"],
+        ["牛丼", "豚丼"],
+        ["天ぷら", "フライ"],
+        ["たこ焼き", "お好み焼き"],
+        ["焼きそば", "ナポリタン"],
+        ["パスタ", "ラーメン"],
+        ["パン", "ごはん"],
+        ["おにぎり", "サンドイッチ"],
+        ["卵焼き", "オムレツ"],
+        ["味噌汁", "スープ"],
+        ["コーンスープ", "ポタージュ"],
+        ["ポテト", "ナゲット"],
+        ["餃子", "シュウマイ"],
+        ["春巻き", "餃子"],
+        ["麻婆豆腐", "エビチリ"],
+        ["カツ丼", "親子丼"],
+        ["うな丼", "天丼"],
+        ["肉まん", "あんまん"],
+        ["ホットドッグ", "ハンバーガー"],
+        ["ドーナツ", "ベーグル"],
+        ["クロワッサン", "食パン"],
+        ["メロンパン", "クリームパン"],
+        ["あんぱん", "ジャムパン"],
+        ["ショートケーキ", "チーズケーキ"],
+        ["プリン", "ゼリー"],
+        ["アイス", "シャーベット"],
+        ["チョコ", "クッキー"],
+        ["ポテチ", "せんべい"],
+        ["グミ", "キャンディ"],
+        ["たい焼き", "今川焼き"],
+        ["団子", "もち"],
+        ["大福", "まんじゅう"],
+        ["かき氷", "アイス"],
+        ["りんご", "梨"],
+        ["みかん", "オレンジ"],
+        ["バナナ", "マンゴー"],
+        ["いちご", "さくらんぼ"],
+        ["ぶどう", "ブルーベリー"],
+        ["スイカ", "メロン"],
+        ["桃", "りんご"],
+        ["レモン", "ライム"],
+        ["キャベツ", "レタス"],
+        ["トマト", "ミニトマト"],
+        ["きゅうり", "ズッキーニ"],
+        ["じゃがいも", "さつまいも"],
+        ["玉ねぎ", "長ねぎ"],
+        ["にんじん", "大根"],
+        ["ブロッコリー", "カリフラワー"],
+        ["とうもろこし", "枝豆"],
+        ["牛乳", "豆乳"],
+        ["コーヒー", "紅茶"],
+        ["緑茶", "麦茶"],
+        ["ココア", "カフェオレ"],
+        ["オレンジジュース", "りんごジュース"],
+        ["炭酸水", "サイダー"],
+        ["水", "お茶"],
+        ["ヨーグルト", "プリン"],
+        ["チーズ", "バター"],
+        ["目玉焼き", "ゆで卵"],
+        ["焼き魚", "煮魚"],
+        ["サバ", "サンマ"],
+        ["マグロ", "サーモン"],
+        ["エビ", "カニ"],
+        ["イカ", "タコ"],
+        ["ウインナー", "ベーコン"],
+        ["ハム", "サラミ"],
+        ["チキンカレー", "ビーフカレー"],
+        ["辛口カレー", "甘口カレー"],
+        ["白米", "玄米"],
+        ["雑炊", "おかゆ"],
+        ["冷やし中華", "そうめん"],
+        ["きつねうどん", "たぬきそば"],
+        ["醤油ラーメン", "味噌ラーメン"],
+        ["塩ラーメン", "豚骨ラーメン"],
+        ["チョコアイス", "バニラアイス"],
+        ["抹茶アイス", "いちごアイス"],
+        ["ミルクティー", "レモンティー"],
+        ["カフェラテ", "カプチーノ"],
+        ["シュークリーム", "エクレア"],
+        ["クレープ", "パンケーキ"],
+        ["ホットケーキ", "ワッフル"],
+        ["焼きプリン", "なめらかプリン"],
+        ["ポップコーン", "ポテトチップス"],
+        ["きのこの山", "たけのこの里"],
+        ["お茶漬け", "ふりかけご飯"],
+        ["肉じゃが", "筑前煮"],
+        ["おでん", "鍋"],
+        ["味噌ラーメン", "味噌汁"],
+        ["コンビニ弁当", "駅弁"],
+        ["冷凍食品", "レトルト食品"],
+        ["朝ごはん", "夜食"]
+      ],
+      "学校": [
+        ["国語", "現代文"],
+        ["数学", "算数"],
+        ["英語", "英会話"],
+        ["理科", "科学"],
+        ["社会", "歴史"],
+        ["地理", "公民"],
+        ["体育", "保健"],
+        ["美術", "図工"],
+        ["音楽", "合唱"],
+        ["家庭科", "技術"],
+        ["情報", "プログラミング"],
+        ["授業", "講義"],
+        ["宿題", "課題"],
+        ["小テスト", "確認テスト"],
+        ["中間テスト", "期末テスト"],
+        ["通知表", "成績表"],
+        ["教科書", "参考書"],
+        ["ノート", "プリント"],
+        ["筆箱", "ペンケース"],
+        ["鉛筆", "シャーペン"],
+        ["消しゴム", "修正テープ"],
+        ["定規", "コンパス"],
+        ["黒板", "ホワイトボード"],
+        ["チョーク", "マーカー"],
+        ["机", "椅子"],
+        ["教室", "講堂"],
+        ["体育館", "グラウンド"],
+        ["図書室", "自習室"],
+        ["職員室", "事務室"],
+        ["校門", "昇降口"],
+        ["廊下", "階段"],
+        ["ロッカー", "下駄箱"],
+        ["制服", "体操服"],
+        ["上履き", "スニーカー"],
+        ["リュック", "スクールバッグ"],
+        ["登校", "下校"],
+        ["遅刻", "欠席"],
+        ["早退", "休み時間"],
+        ["昼休み", "放課後"],
+        ["給食", "弁当"],
+        ["委員会", "係"],
+        ["学級委員", "生徒会"],
+        ["部活", "サークル"],
+        ["文化祭", "体育祭"],
+        ["修学旅行", "遠足"],
+        ["入学式", "卒業式"],
+        ["始業式", "終業式"],
+        ["朝礼", "ホームルーム"],
+        ["担任", "先生"],
+        ["校長先生", "教頭先生"],
+        ["先輩", "後輩"],
+        ["友達", "クラスメイト"],
+        ["班", "グループ"],
+        ["発表", "プレゼン"],
+        ["レポート", "作文"],
+        ["読書感想文", "自由研究"],
+        ["実験", "観察"],
+        ["計算", "暗算"],
+        ["漢字", "英単語"],
+        ["音読", "黙読"],
+        ["暗記", "理解"],
+        ["予習", "復習"],
+        ["ノート提出", "課題提出"],
+        ["オンライン授業", "対面授業"],
+        ["出席", "点呼"],
+        ["時間割", "シラバス"],
+        ["1限", "2限"],
+        ["休講", "補講"],
+        ["単位", "出席点"],
+        ["レポート課題", "テスト勉強"],
+        ["ゼミ", "演習"],
+        ["実習", "実験"],
+        ["大学", "高校"],
+        ["中学校", "小学校"],
+        ["キャンパス", "校舎"],
+        ["学食", "購買"],
+        ["学生証", "定期券"],
+        ["履修登録", "時間割作成"],
+        ["オンライン提出", "紙提出"],
+        ["グループワーク", "個人作業"],
+        ["発言", "質問"],
+        ["先生に聞く", "友達に聞く"],
+        ["ノートを取る", "写真を撮る"],
+        ["寝坊", "遅刻"],
+        ["席替え", "班替え"],
+        ["前の席", "後ろの席"],
+        ["窓側", "廊下側"],
+        ["校則", "ルール"],
+        ["スマホ禁止", "私語禁止"],
+        ["チャイム", "ベル"],
+        ["試験監督", "面接官"],
+        ["受験", "模試"],
+        ["合格", "進級"],
+        ["補習", "追試"],
+        ["赤点", "再提出"],
+        ["学年", "クラス"],
+        ["出席番号", "名前順"],
+        ["部室", "更衣室"],
+        ["文化部", "運動部"],
+        ["個人面談", "三者面談"]
+      ],
+      "遊び": [
+        ["鬼ごっこ", "かくれんぼ"],
+        ["缶けり", "だるまさんがころんだ"],
+        ["ドッジボール", "キャッチボール"],
+        ["サッカー", "フットサル"],
+        ["野球", "ソフトボール"],
+        ["バスケ", "バレー"],
+        ["卓球", "テニス"],
+        ["バドミントン", "テニス"],
+        ["ボウリング", "ビリヤード"],
+        ["カラオケ", "ライブ"],
+        ["映画館", "家で映画"],
+        ["遊園地", "テーマパーク"],
+        ["水族館", "動物園"],
+        ["博物館", "美術館"],
+        ["公園", "広場"],
+        ["散歩", "サイクリング"],
+        ["キャンプ", "バーベキュー"],
+        ["花火", "イルミネーション"],
+        ["海", "プール"],
+        ["山登り", "ハイキング"],
+        ["釣り", "虫取り"],
+        ["スケート", "スキー"],
+        ["雪合戦", "そり遊び"],
+        ["トランプ", "UNO"],
+        ["大富豪", "ババ抜き"],
+        ["神経衰弱", "七並べ"],
+        ["人生ゲーム", "すごろく"],
+        ["将棋", "チェス"],
+        ["オセロ", "囲碁"],
+        ["ジェンガ", "積み木"],
+        ["ボードゲーム", "カードゲーム"],
+        ["人狼", "ワードウルフ"],
+        ["クイズ", "なぞなぞ"],
+        ["しりとり", "連想ゲーム"],
+        ["早口言葉", "ものまね"],
+        ["ジェスチャーゲーム", "絵しりとり"],
+        ["お絵描き", "塗り絵"],
+        ["工作", "折り紙"],
+        ["プラモデル", "レゴ"],
+        ["写真撮影", "動画撮影"],
+        ["プリクラ", "自撮り"],
+        ["ショッピング", "ウィンドウショッピング"],
+        ["食べ歩き", "カフェ巡り"],
+        ["ゲームセンター", "ボウリング場"],
+        ["クレーンゲーム", "ガチャガチャ"],
+        ["メダルゲーム", "音ゲー"],
+        ["リズムゲーム", "ダンスゲーム"],
+        ["対戦ゲーム", "協力ゲーム"],
+        ["スマホゲーム", "家庭用ゲーム"],
+        ["オンラインゲーム", "オフラインゲーム"],
+        ["マイクラ", "あつ森"],
+        ["マリオカート", "スマブラ"],
+        ["ポケモン", "モンハン"],
+        ["パズル", "脱出ゲーム"],
+        ["謎解き", "宝探し"],
+        ["かるた", "百人一首"],
+        ["福笑い", "羽根つき"],
+        ["凧あげ", "けん玉"],
+        ["コマ回し", "ヨーヨー"],
+        ["シャボン玉", "水鉄砲"],
+        ["砂遊び", "泥遊び"],
+        ["ブランコ", "すべり台"],
+        ["シーソー", "ジャングルジム"],
+        ["縄跳び", "長縄"],
+        ["リレー", "徒競走"],
+        ["腕相撲", "指相撲"],
+        ["じゃんけん", "あっち向いてホイ"],
+        ["罰ゲーム", "ご褒美ゲーム"],
+        ["旅行", "日帰り旅行"],
+        ["電車旅", "ドライブ"],
+        ["温泉", "銭湯"],
+        ["ホテル", "旅館"],
+        ["合宿", "お泊まり会"],
+        ["料理会", "お菓子作り"],
+        ["ピクニック", "遠足"],
+        ["フリーマーケット", "お祭り"],
+        ["屋台", "縁日"],
+        ["盆踊り", "夏祭り"],
+        ["クリスマス会", "誕生日会"],
+        ["プレゼント交換", "ビンゴ大会"],
+        ["スポーツ観戦", "ライブ配信視聴"],
+        ["YouTube鑑賞", "アニメ鑑賞"],
+        ["漫画を読む", "小説を読む"],
+        ["音楽を聴く", "歌う"],
+        ["ピアノ", "ギター"],
+        ["ダンス", "筋トレ"],
+        ["ジョギング", "ウォーキング"],
+        ["昼寝", "ごろごろ"],
+        ["カフェで話す", "公園で話す"],
+        ["友達の家", "自分の家"],
+        ["オンライン通話", "直接会う"],
+        ["チャット", "電話"],
+        ["写真加工", "動画編集"],
+        ["配信を見る", "配信する"],
+        ["推し活", "グッズ集め"],
+        ["ガチャ", "くじ引き"],
+        ["占い", "心理テスト"],
+        ["ランキング作り", "診断メーカー"]
+      ],
+      "生活": [
+        ["朝ごはん", "昼ごはん"],
+        ["昼ごはん", "夜ごはん"],
+        ["お風呂", "シャワー"],
+        ["歯磨き", "洗顔"],
+        ["着替え", "身支度"],
+        ["掃除", "片付け"],
+        ["洗濯", "乾燥"],
+        ["料理", "皿洗い"],
+        ["買い物", "ネット注文"],
+        ["コンビニ", "スーパー"],
+        ["ドラッグストア", "ホームセンター"],
+        ["駅", "バス停"],
+        ["電車", "バス"],
+        ["自転車", "徒歩"],
+        ["タクシー", "電車"],
+        ["傘", "レインコート"],
+        ["スマホ", "パソコン"],
+        ["充電器", "モバイルバッテリー"],
+        ["イヤホン", "ヘッドホン"],
+        ["時計", "スマートウォッチ"],
+        ["財布", "小銭入れ"],
+        ["現金", "電子マネー"],
+        ["カード払い", "QR決済"],
+        ["鍵", "定期券"],
+        ["リュック", "トートバッグ"],
+        ["マスク", "ハンカチ"],
+        ["ティッシュ", "ウェットティッシュ"],
+        ["メガネ", "コンタクト"],
+        ["帽子", "フード"],
+        ["上着", "パーカー"],
+        ["靴", "サンダル"],
+        ["ベッド", "布団"],
+        ["枕", "クッション"],
+        ["机", "テーブル"],
+        ["椅子", "ソファ"],
+        ["冷蔵庫", "電子レンジ"],
+        ["炊飯器", "トースター"],
+        ["エアコン", "扇風機"],
+        ["暖房", "こたつ"],
+        ["テレビ", "モニター"],
+        ["電気", "照明"],
+        ["カーテン", "ブラインド"],
+        ["ゴミ出し", "分別"],
+        ["燃えるゴミ", "燃えないゴミ"],
+        ["ペットボトル", "缶"],
+        ["宅配", "郵便"],
+        ["封筒", "段ボール"],
+        ["予定", "ToDo"],
+        ["メモ", "日記"],
+        ["カレンダー", "スケジュール帳"],
+        ["アラーム", "タイマー"],
+        ["寝坊", "二度寝"],
+        ["早起き", "夜更かし"],
+        ["昼寝", "仮眠"],
+        ["通学", "通勤"],
+        ["休み", "休日"],
+        ["平日", "週末"],
+        ["月曜日", "金曜日"],
+        ["朝", "夜"],
+        ["午前", "午後"],
+        ["晴れ", "曇り"],
+        ["雨", "雪"],
+        ["暑い", "寒い"],
+        ["乾燥", "湿気"],
+        ["花粉", "ほこり"],
+        ["風邪", "寝不足"],
+        ["病院", "薬局"],
+        ["予約", "受付"],
+        ["美容院", "床屋"],
+        ["爪切り", "耳かき"],
+        ["筋トレ", "ストレッチ"],
+        ["ウォーキング", "ランニング"],
+        ["水を飲む", "お茶を飲む"],
+        ["節約", "貯金"],
+        ["家計簿", "レシート"],
+        ["セール", "ポイント"],
+        ["新品", "中古"],
+        ["レンタル", "購入"],
+        ["片道", "往復"],
+        ["近道", "遠回り"],
+        ["待ち合わせ", "集合"],
+        ["遅れる", "早く着く"],
+        ["忘れ物", "落とし物"],
+        ["探し物", "なくし物"],
+        ["掃除機", "ほうき"],
+        ["雑巾", "モップ"],
+        ["洗剤", "柔軟剤"],
+        ["シャンプー", "リンス"],
+        ["ボディソープ", "石けん"],
+        ["歯ブラシ", "歯磨き粉"],
+        ["冷房", "暖房"],
+        ["窓を開ける", "換気する"],
+        ["鍵を閉める", "電気を消す"],
+        ["通知", "着信"],
+        ["メール", "LINE"],
+        ["写真", "スクショ"],
+        ["バックアップ", "保存"],
+        ["アップデート", "再起動"],
+        ["ログイン", "パスワード"],
+        ["Wi-Fi", "モバイル通信"],
+        ["充電する", "電源を切る"],
+        ["外出", "帰宅"],
+        ["家", "部屋"]
+      ],
+      "アニメ・ゲーム": [
+        ["主人公", "ライバル"],
+        ["ヒロイン", "相棒"],
+        ["ラスボス", "中ボス"],
+        ["敵キャラ", "味方キャラ"],
+        ["仲間", "パーティー"],
+        ["魔法使い", "剣士"],
+        ["勇者", "魔王"],
+        ["騎士", "侍"],
+        ["忍者", "スパイ"],
+        ["探偵", "怪盗"],
+        ["ロボット", "アンドロイド"],
+        ["宇宙人", "未来人"],
+        ["異世界", "ファンタジー世界"],
+        ["学園もの", "部活もの"],
+        ["バトルもの", "スポーツもの"],
+        ["日常系", "ギャグ系"],
+        ["恋愛もの", "青春もの"],
+        ["ミステリー", "サスペンス"],
+        ["冒険", "旅"],
+        ["修行", "特訓"],
+        ["覚醒", "進化"],
+        ["必殺技", "奥義"],
+        ["魔法", "スキル"],
+        ["剣", "杖"],
+        ["盾", "鎧"],
+        ["HP", "MP"],
+        ["レベル", "経験値"],
+        ["ステータス", "装備"],
+        ["アイテム", "素材"],
+        ["回復薬", "復活アイテム"],
+        ["セーブ", "ロード"],
+        ["チェックポイント", "リスポーン"],
+        ["チュートリアル", "プロローグ"],
+        ["ステージ", "ダンジョン"],
+        ["フィールド", "マップ"],
+        ["村", "城"],
+        ["ショップ", "宿屋"],
+        ["クエスト", "ミッション"],
+        ["メインストーリー", "サブクエスト"],
+        ["ガチャ", "ログインボーナス"],
+        ["レアキャラ", "限定キャラ"],
+        ["無課金", "課金"],
+        ["ソロプレイ", "マルチプレイ"],
+        ["協力プレイ", "対戦プレイ"],
+        ["オンライン", "オフライン"],
+        ["コントローラー", "キーボード"],
+        ["スマホゲーム", "家庭用ゲーム"],
+        ["RPG", "アクションゲーム"],
+        ["パズルゲーム", "音ゲー"],
+        ["格闘ゲーム", "シューティングゲーム"],
+        ["レースゲーム", "スポーツゲーム"],
+        ["シミュレーション", "育成ゲーム"],
+        ["オープンワールド", "一本道ゲーム"],
+        ["ドット絵", "3Dグラフィック"],
+        ["アニメ", "漫画"],
+        ["原作", "アニメ化"],
+        ["映画版", "テレビ版"],
+        ["オープニング", "エンディング"],
+        ["主題歌", "挿入歌"],
+        ["声優", "キャラクター"],
+        ["作画", "演出"],
+        ["神回", "最終回"],
+        ["伏線", "回収"],
+        ["ネタバレ", "考察"],
+        ["名シーン", "名セリフ"],
+        ["変身", "合体"],
+        ["召喚", "封印"],
+        ["タイムリープ", "ループ"],
+        ["能力者", "超能力者"],
+        ["魔法少女", "変身ヒーロー"],
+        ["アイドルアニメ", "音楽アニメ"],
+        ["料理アニメ", "スポーツアニメ"],
+        ["野球アニメ", "サッカーアニメ"],
+        ["カードゲーム", "ボードゲーム"],
+        ["ポケモン", "デジモン"],
+        ["マリオ", "ソニック"],
+        ["ゼルダ", "ドラクエ"],
+        ["スプラトゥーン", "フォートナイト"],
+        ["マイクラ", "テラリア"],
+        ["スマブラ", "マリオカート"],
+        ["モンハン", "ポケモン"],
+        ["どうぶつの森", "牧場物語"],
+        ["ぷよぷよ", "テトリス"],
+        ["太鼓の達人", "プロセカ"],
+        ["原神", "崩壊スターレイル"],
+        ["ウマ娘", "ブルーアーカイブ"],
+        ["FGO", "グラブル"],
+        ["スライム", "ゴブリン"],
+        ["ドラゴン", "フェニックス"],
+        ["ゾンビ", "幽霊"],
+        ["吸血鬼", "狼男"],
+        ["天使", "悪魔"],
+        ["王子", "姫"],
+        ["王様", "村長"],
+        ["師匠", "弟子"],
+        ["兄キャラ", "弟キャラ"],
+        ["姉キャラ", "妹キャラ"],
+        ["幼なじみ", "転校生"],
+        ["生徒会長", "委員長"],
+        ["クールキャラ", "元気キャラ"],
+        ["ツンデレ", "天然キャラ"],
+        ["黒幕", "裏切り者"],
+        ["復讐", "救出"],
+        ["大会編", "修学旅行編"],
+        ["ゲーム実況", "アニメ鑑賞"]
+      ]
+    };
+
+    const LEGACY_TOPIC_GENRES = {
+      food: "食べ物",
+      school: "学校",
+      play: "遊び",
+      life: "生活",
+      anime_game: "アニメ・ゲーム"
+    };
+
+    const topicSource = typeof TOPIC_SETS === "undefined" ? {} : TOPIC_SETS;
+    const topicGenres = buildTopicGenres(topicSource);
+    const topicSets = buildTopicSets(topicSource);
 
     const storageKeys = {
       playerId: "party-game-web.playerId",
@@ -829,6 +1319,7 @@
       resultMajorityWord: document.querySelector("#result-majority-word"),
       resultMinorityWord: document.querySelector("#result-minority-word"),
       minorityPlayerName: document.querySelector("#minority-player-name"),
+      resultSummary: document.querySelector("#result-summary"),
       winnerText: document.querySelector("#winner-text")
     };
 
@@ -839,6 +1330,7 @@
       state.playerName = readStorage(storageKeys.nickname);
       el.nicknameInput.value = state.playerName;
 
+      renderTopicGenreOptions();
       wireEvents();
       initFirebase();
 
@@ -1148,8 +1640,11 @@
 
       el.resultMajorityWord.textContent = topicSet.majority || "-";
       el.resultMinorityWord.textContent = topicSet.minority || "-";
-      el.minorityPlayerName.textContent = `少数派: ${getPlayerName(players, game.minorityPlayerId)}`;
+      el.minorityPlayerName.textContent = `人狼: ${getPlayerName(players, game.minorityPlayerId)}`;
       el.winnerText.textContent = getWinnerLabel(result.winner);
+      el.resultSummary.textContent = result.isMinorityFound
+        ? "投票で人狼を見つけました"
+        : "人狼を見つけられませんでした";
 
       el.resultVoteList.replaceChildren();
       for (const [voterId, vote] of Object.entries(votes)) {
@@ -1237,6 +1732,9 @@
     async function beginRound(playerIds, roundNumber) {
       const settings = getRoomSettings(state.roomData);
       const topicPool = getTopicPool(settings.topicGenre);
+      if (!topicPool.length) {
+        throw new Error("選択したジャンルに使えるお題がありません。");
+      }
       const topicSet = topicPool[randomIndex(topicPool.length)];
       const minorityPlayerId = playerIds[randomIndex(playerIds.length)];
 
@@ -1368,7 +1866,7 @@
       if (!state.roomData || state.roomData.hostId !== state.playerId || !state.roomCode) return;
 
       const timerSeconds = Number(el.timerSelect.value) || DEFAULT_TIMER_SECONDS;
-      const topicGenre = topicGenres[el.topicGenreSelect.value] ? el.topicGenreSelect.value : "all";
+      const topicGenre = getValidTopicGenre(el.topicGenreSelect.value);
 
       try {
         await update(ref(state.db, `rooms/${state.roomCode}/settings`), {
@@ -1480,11 +1978,60 @@
       return code;
     }
 
+    function renderTopicGenreOptions() {
+      const selectedGenre = normalizeTopicGenre(el.topicGenreSelect.value);
+      el.topicGenreSelect.replaceChildren();
+
+      for (const [value, label] of Object.entries(topicGenres)) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        el.topicGenreSelect.append(option);
+      }
+
+      el.topicGenreSelect.value = getValidTopicGenre(selectedGenre);
+    }
+
+    function buildTopicGenres(source) {
+      const genres = { all: "すべて" };
+      for (const [genre] of getTopicEntries(source)) {
+        genres[genre] = genre;
+      }
+      return genres;
+    }
+
+    function buildTopicSets(source) {
+      const sets = [];
+      for (const [genre, pairs] of getTopicEntries(source)) {
+        for (const pair of pairs) {
+          const topicSet = normalizeTopicPair(pair);
+          if (!topicSet) continue;
+          sets.push({ genre, majority: topicSet.majority, minority: topicSet.minority });
+        }
+      }
+      return sets;
+    }
+
+    function getTopicEntries(source) {
+      if (!source || typeof source !== "object") return [];
+      return Object.entries(source).filter(([genre, pairs]) => Boolean(String(genre).trim()) && Array.isArray(pairs));
+    }
+
+    function normalizeTopicPair(pair) {
+      if (!Array.isArray(pair) || pair.length < 2) return null;
+      const majority = String(pair[0] || "").trim();
+      const minority = String(pair[1] || "").trim();
+      if (!majority || !minority || majority === minority) return null;
+      return { majority, minority };
+    }
+
     function getTopicPool(topicGenre) {
-      const pool = topicGenre === "all"
+      if (!topicSets.length) return [];
+      const safeGenre = getValidTopicGenre(topicGenre);
+      const pool = safeGenre === "all"
         ? topicSets
-        : topicSets.filter((topicSet) => topicSet.genre === topicGenre);
-      return pool.length ? pool : topicSets;
+        : topicSets.filter((topicSet) => topicSet.genre === safeGenre);
+      return pool;
     }
 
     function getRoomSettings(roomData) {
@@ -1492,8 +2039,23 @@
       const timerSeconds = [60, 180, 300, 600].includes(Number(settings.timerSeconds))
         ? Number(settings.timerSeconds)
         : DEFAULT_TIMER_SECONDS;
-      const topicGenre = topicGenres[settings.topicGenre] ? settings.topicGenre : "all";
+      const topicGenre = getValidTopicGenre(settings.topicGenre);
       return { timerSeconds, topicGenre };
+    }
+
+    function getValidTopicGenre(topicGenre) {
+      const normalizedGenre = normalizeTopicGenre(topicGenre);
+      if (topicGenres[normalizedGenre]) return normalizedGenre;
+      return getDefaultTopicGenre();
+    }
+
+    function normalizeTopicGenre(topicGenre) {
+      const genre = String(topicGenre || "");
+      return LEGACY_TOPIC_GENRES[genre] || genre;
+    }
+
+    function getDefaultTopicGenre() {
+      return Object.keys(topicGenres).find((genre) => genre !== "all") || "all";
     }
 
     function getRoundNumber(roomData) {
@@ -1559,13 +2121,13 @@
     }
 
     function getWinnerLabel(winner) {
-      if (winner === "majority") return "多数派勝利";
-      if (winner === "minority") return "少数派勝利";
+      if (winner === "majority" || winner === "citizen") return "市民勝利";
+      if (winner === "minority" || winner === "werewolf") return "人狼勝利";
       return "引き分け";
     }
 
     function getGenreLabel(topicGenre) {
-      return topicGenres[topicGenre] || topicGenres.all;
+      return topicGenres[getValidTopicGenre(topicGenre)] || topicGenres[getDefaultTopicGenre()] || "すべて";
     }
 
     function formatSeconds(totalSeconds) {
