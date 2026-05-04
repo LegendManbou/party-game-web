@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Party Game Web</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-strong: #eef6f3;
+      --text: #17202a;
+      --muted: #596675;
+      --line: #d9e1ea;
+      --primary: #146c5f;
+      --primary-dark: #0d4d45;
+      --accent: #f2a541;
+      --danger: #b42318;
+      --danger-bg: #fff0ed;
+      --ok-bg: #edf8f2;
+      --info-bg: #eef4ff;
+      --shadow: 0 10px 26px rgba(24, 34, 48, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      min-height: 48px;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    input {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 13px;
+      background: #ffffff;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    input:focus,
+    button:focus-visible {
+      outline: 3px solid rgba(20, 108, 95, 0.24);
+      outline-offset: 2px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      font-weight: 700;
+    }
+
+    .app-shell {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: 18px 14px 32px;
+    }
+
+    .site-header {
+      padding: 12px 0 20px;
+    }
+
+    .site-title {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 3.2rem);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    .site-lead {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.is-active {
+      display: block;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 1.35rem;
+      letter-spacing: 0;
+    }
+
+    .game-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .game-card,
+    .play-surface {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .game-card {
+      padding: 18px;
+    }
+
+    .game-card h3,
+    .view-title {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0;
+    }
+
+    .game-card p,
+    .hint {
+      color: var(--muted);
+    }
+
+    .game-card p {
+      margin: 8px 0 16px;
+    }
+
+    .play-surface {
+      overflow: hidden;
+    }
+
+    .play-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-strong);
+    }
+
+    .ghost-button {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .danger-button {
+      background: var(--danger);
+    }
+
+    .view {
+      display: none;
+      padding: 18px 16px 20px;
+    }
+
+    .view.is-active {
+      display: block;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .divider {
+      height: 1px;
+      margin: 4px 0;
+      background: var(--line);
+    }
+
+    .button-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .room-code {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 150px;
+      min-height: 64px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 8px 16px;
+      background: #ffffff;
+      color: var(--primary-dark);
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .share-box {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .share-url {
+      width: 100%;
+      overflow-wrap: anywhere;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .player-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .player-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 11px;
+      background: #ffffff;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #ecf1f5;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .topic-box {
+      display: grid;
+      gap: 8px;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 18px 14px;
+      background: #fffaf0;
+      text-align: center;
+    }
+
+    .topic-label {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .topic-word {
+      margin: 0;
+      color: #4b3100;
+      font-size: clamp(2rem, 12vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      min-height: 42px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--info-bg);
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .status:empty {
+      display: none;
+    }
+
+    .status.is-error {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .status.is-ok {
+      background: var(--ok-bg);
+      color: var(--primary-dark);
+    }
+
+    .host-only,
+    .guest-only {
+      display: none;
+    }
+
+    .host-only.is-visible,
+    .guest-only.is-visible {
+      display: block;
+    }
+
+    .host-only button {
+      width: 100%;
+    }
+
+    @media (min-width: 620px) {
+      .app-shell {
+        padding: 28px 20px 44px;
+      }
+
+      .button-row.two-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .share-box {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="site-header">
+      <h1 class="site-title">Party Game Web</h1>
+      <p class="site-lead">友達と同じURLから参加して遊べるパーティーゲーム</p>
+    </header>
+
+    <section id="home-screen" class="screen is-active" aria-labelledby="home-title">
+      <h2 id="home-title" class="section-title">ゲーム一覧</h2>
+      <div class="game-list" aria-label="ゲーム一覧">
+        <article class="game-card" data-game-id="wordwolf">
+          <h3>同期ワードウルフ</h3>
+          <p>友達と同じURLから参加して遊べるワードウルフ</p>
+          <button id="open-wordwolf-button" type="button">このゲームで遊ぶ</button>
+        </article>
+      </div>
+    </section>
+
+    <section id="wordwolf-screen" class="screen" aria-labelledby="wordwolf-title">
+      <div class="play-surface">
+        <div class="play-header">
+          <h2 id="wordwolf-title" class="view-title">同期ワードウルフ</h2>
+          <button id="back-home-button" class="ghost-button" type="button">ゲーム一覧</button>
+        </div>
+
+        <div id="setup-view" class="view is-active">
+          <div class="stack">
+            <label>
+              ニックネーム
+              <input id="nickname-input" type="text" autocomplete="nickname" maxlength="16" placeholder="例：まんぼう">
+            </label>
+
+            <div class="button-row">
+              <button id="create-room-button" type="button">部屋を作る</button>
+            </div>
+
+            <div class="divider" aria-hidden="true"></div>
+
+            <label>
+              部屋コード
+              <input id="room-code-input" type="text" inputmode="latin" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="例：AB12C">
+            </label>
+
+            <div class="button-row">
+              <button id="join-room-button" type="button">参加する</button>
+            </div>
+
+            <p class="hint">共有URLを開いた場合は、部屋コードが自動で入ります。</p>
+            <div id="setup-status" class="status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div id="waiting-view" class="view">
+          <div class="stack">
+            <div>
+              <p class="hint">部屋コード</p>
+              <div id="waiting-room-code" class="room-code">----</div>
+            </div>
+
+            <div>
+              <p class="hint">自分のニックネーム</p>
+              <strong id="waiting-player-name">-</strong>
+            </div>
+
+            <div class="share-box">
+              <div>
+                <strong>共有URL</strong>
+                <div id="share-url" class="share-url"></div>
+              </div>
+              <button id="copy-url-button" type="button">コピー</button>
+            </div>
+
+            <div>
+              <h3 class="view-title">参加者</h3>
+              <ul id="waiting-player-list" class="player-list"></ul>
+            </div>
+
+            <div id="host-waiting-controls" class="host-only">
+              <button id="start-game-button" type="button">ゲーム開始</button>
+            </div>
+
+            <div id="guest-waiting-message" class="guest-only status">ホストが開始するまで待ってください。</div>
+            <div id="waiting-status" class="status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div id="playing-view" class="view">
+          <div class="stack">
+            <div class="topic-box">
+              <p class="topic-label">あなたのお題</p>
+              <p id="my-topic" class="topic-word">-</p>
+              <strong>他の人に見せないでください</strong>
+            </div>
+
+            <div class="status">話し合いタイム</div>
+
+            <div>
+              <h3 class="view-title">参加者</h3>
+              <ul id="playing-player-list" class="player-list"></ul>
+            </div>
+
+            <div id="host-playing-controls" class="host-only">
+              <button id="reset-room-button" class="danger-button" type="button">部屋をリセット</button>
+            </div>
+
+            <div id="playing-status" class="status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getDatabase, ref, set, update, onValue, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDf4KifElRKeYxNzfpV1_H5kPi7mGkOTQs",
+      authDomain: "party-game-web.firebaseapp.com",
+      databaseURL: "https://party-game-web-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "party-game-web",
+      storageBucket: "party-game-web.firebasestorage.app",
+      messagingSenderId: "835058988137",
+      appId: "1:835058988137:web:319521f6ec4abcf0759ef8",
+      measurementId: "G-K17KR0VR5J"
+    };
+
+    const PUBLIC_BASE_URL = "https://LegendManbou.github.io/party-game-web/";
+    const ROOM_CODE_LENGTH = 5;
+    const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    // Later games can be added here and connected to cards in the game list.
+    const games = [
+      { id: "wordwolf", title: "同期ワードウルフ" }
+    ];
+
+    const topicSets = [
+      { majority: "犬", minority: "猫" },
+      { majority: "カレー", minority: "ラーメン" },
+      { majority: "海", minority: "プール" },
+      { majority: "映画館", minority: "カラオケ" },
+      { majority: "夏", minority: "冬" },
+      { majority: "コーヒー", minority: "紅茶" },
+      { majority: "電車", minority: "バス" },
+      { majority: "朝ごはん", minority: "夜食" }
+    ];
+
+    const storageKeys = {
+      playerId: "party-game-web.playerId",
+      nickname: "party-game-web.nickname",
+      roomCode: "party-game-web.roomCode"
+    };
+
+    const state = {
+      app: null,
+      db: null,
+      playerId: "",
+      roomCode: "",
+      playerName: "",
+      roomData: null,
+      roomUnsubscribe: null
+    };
+
+    const el = {
+      homeScreen: document.querySelector("#home-screen"),
+      wordwolfScreen: document.querySelector("#wordwolf-screen"),
+      setupView: document.querySelector("#setup-view"),
+      waitingView: document.querySelector("#waiting-view"),
+      playingView: document.querySelector("#playing-view"),
+      openWordwolfButton: document.querySelector("#open-wordwolf-button"),
+      backHomeButton: document.querySelector("#back-home-button"),
+      nicknameInput: document.querySelector("#nickname-input"),
+      roomCodeInput: document.querySelector("#room-code-input"),
+      createRoomButton: document.querySelector("#create-room-button"),
+      joinRoomButton: document.querySelector("#join-room-button"),
+      copyUrlButton: document.querySelector("#copy-url-button"),
+      startGameButton: document.querySelector("#start-game-button"),
+      resetRoomButton: document.querySelector("#reset-room-button"),
+      setupStatus: document.querySelector("#setup-status"),
+      waitingStatus: document.querySelector("#waiting-status"),
+      playingStatus: document.querySelector("#playing-status"),
+      waitingRoomCode: document.querySelector("#waiting-room-code"),
+      waitingPlayerName: document.querySelector("#waiting-player-name"),
+      shareUrl: document.querySelector("#share-url"),
+      waitingPlayerList: document.querySelector("#waiting-player-list"),
+      playingPlayerList: document.querySelector("#playing-player-list"),
+      hostWaitingControls: document.querySelector("#host-waiting-controls"),
+      guestWaitingMessage: document.querySelector("#guest-waiting-message"),
+      hostPlayingControls: document.querySelector("#host-playing-controls"),
+      myTopic: document.querySelector("#my-topic")
+    };
+
+    boot();
+
+    function boot() {
+      state.playerId = getOrCreatePlayerId();
+      state.playerName = readStorage(storageKeys.nickname);
+      el.nicknameInput.value = state.playerName;
+
+      wireEvents();
+      initFirebase();
+
+      const roomFromUrl = getRoomCodeFromUrl();
+      if (roomFromUrl) {
+        el.roomCodeInput.value = roomFromUrl;
+        showScreen("wordwolf");
+        setStatus(el.setupStatus, "共有URLの部屋コードを入力しました。ニックネームを入れて参加してください。");
+      }
+
+      tryRestoreRoom(roomFromUrl);
+      console.info("Loaded games:", games.map((game) => game.title).join(", "));
+    }
+
+    function wireEvents() {
+      el.openWordwolfButton.addEventListener("click", () => showScreen("wordwolf"));
+      el.backHomeButton.addEventListener("click", () => showScreen("home"));
+      el.createRoomButton.addEventListener("click", createRoom);
+      el.joinRoomButton.addEventListener("click", joinRoom);
+      el.copyUrlButton.addEventListener("click", copyShareUrl);
+      el.startGameButton.addEventListener("click", startGame);
+      el.resetRoomButton.addEventListener("click", resetRoom);
+      el.roomCodeInput.addEventListener("input", () => {
+        el.roomCodeInput.value = normalizeRoomCode(el.roomCodeInput.value);
+      });
+      el.nicknameInput.addEventListener("input", () => {
+        const nickname = sanitizeNickname(el.nicknameInput.value);
+        writeStorage(storageKeys.nickname, nickname);
+      });
+      el.roomCodeInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          joinRoom();
+        }
+      });
+    }
+
+    function initFirebase() {
+      if (!isFirebaseConfigured(firebaseConfig)) {
+        setStatus(el.setupStatus, "Firebase設定を index.html に貼ると同期機能が使えます。", "error");
+        setSetupButtonsDisabled(true);
+        return;
+      }
+
+      try {
+        state.app = initializeApp(firebaseConfig);
+        state.db = getDatabase(state.app);
+      } catch (error) {
+        setStatus(el.setupStatus, `Firebaseの初期化に失敗しました: ${error.message}`, "error");
+        setSetupButtonsDisabled(true);
+      }
+    }
+
+    async function createRoom() {
+      const nickname = getNicknameOrShowError();
+      if (!nickname || !state.db) return;
+
+      setSetupButtonsDisabled(true);
+      setStatus(el.setupStatus, "部屋を作成しています...");
+
+      try {
+        const roomCode = await generateUniqueRoomCode();
+        const roomRef = ref(state.db, `rooms/${roomCode}`);
+
+        await set(roomRef, {
+          createdAt: serverTimestamp(),
+          hostId: state.playerId,
+          status: "waiting",
+          players: {
+            [state.playerId]: {
+              name: nickname,
+              joinedAt: serverTimestamp()
+            }
+          },
+          game: null
+        });
+
+        enterRoom(roomCode, nickname);
+        setStatus(el.waitingStatus, "部屋を作成しました。共有URLを友達に送ってください。", "ok");
+      } catch (error) {
+        setStatus(el.setupStatus, `部屋の作成に失敗しました: ${error.message}`, "error");
+      } finally {
+        setSetupButtonsDisabled(false);
+      }
+    }
+
+    async function joinRoom() {
+      const nickname = getNicknameOrShowError();
+      const roomCode = normalizeRoomCode(el.roomCodeInput.value);
+      if (!nickname || !state.db) return;
+
+      if (!roomCode) {
+        setStatus(el.setupStatus, "部屋コードを入力してください。", "error");
+        return;
+      }
+
+      setSetupButtonsDisabled(true);
+      setStatus(el.setupStatus, "部屋に参加しています...");
+
+      try {
+        const roomSnapshot = await get(ref(state.db, `rooms/${roomCode}`));
+        if (!roomSnapshot.exists()) {
+          setStatus(el.setupStatus, "部屋が見つかりません。コードを確認してください。", "error");
+          return;
+        }
+
+        await set(ref(state.db, `rooms/${roomCode}/players/${state.playerId}`), {
+          name: nickname,
+          joinedAt: serverTimestamp()
+        });
+
+        enterRoom(roomCode, nickname);
+      } catch (error) {
+        setStatus(el.setupStatus, `参加に失敗しました: ${error.message}`, "error");
+      } finally {
+        setSetupButtonsDisabled(false);
+      }
+    }
+
+    function enterRoom(roomCode, nickname) {
+      state.roomCode = roomCode;
+      state.playerName = nickname;
+      writeStorage(storageKeys.nickname, nickname);
+      writeStorage(storageKeys.roomCode, roomCode);
+      updateUrlRoomCode(roomCode);
+      showScreen("wordwolf");
+      subscribeRoom(roomCode);
+    }
+
+    function subscribeRoom(roomCode) {
+      if (state.roomUnsubscribe) {
+        state.roomUnsubscribe();
+      }
+
+      state.roomUnsubscribe = onValue(
+        ref(state.db, `rooms/${roomCode}`),
+        (snapshot) => {
+          const roomData = snapshot.val();
+          if (!roomData) {
+            state.roomData = null;
+            showWordwolfView("setup");
+            setStatus(el.setupStatus, "部屋が見つからなくなりました。もう一度作成または参加してください。", "error");
+            return;
+          }
+
+          state.roomData = roomData;
+          renderRoom();
+        },
+        (error) => {
+          setStatus(el.setupStatus, `同期に失敗しました: ${error.message}`, "error");
+        }
+      );
+    }
+
+    async function tryRestoreRoom(roomFromUrl) {
+      if (!state.db) return;
+
+      const savedRoomCode = normalizeRoomCode(readStorage(storageKeys.roomCode));
+      const roomCode = roomFromUrl || savedRoomCode;
+      if (!roomCode) return;
+
+      try {
+        const playerSnapshot = await get(ref(state.db, `rooms/${roomCode}/players/${state.playerId}`));
+        if (!playerSnapshot.exists()) return;
+
+        const savedPlayer = playerSnapshot.val();
+        const nickname = sanitizeNickname(savedPlayer.name || state.playerName);
+        if (!nickname) return;
+
+        el.nicknameInput.value = nickname;
+        enterRoom(roomCode, nickname);
+      } catch (error) {
+        setStatus(el.setupStatus, `前回の部屋への復帰に失敗しました: ${error.message}`, "error");
+      }
+    }
+
+    function renderRoom() {
+      const roomData = state.roomData;
+      const players = roomData.players || {};
+      const currentPlayer = players[state.playerId];
+
+      if (!currentPlayer) {
+        showWordwolfView("setup");
+        setStatus(el.setupStatus, "この端末はまだ部屋に参加していません。ニックネームを入れて参加してください。");
+        return;
+      }
+
+      state.playerName = sanitizeNickname(currentPlayer.name || state.playerName);
+      const isHost = roomData.hostId === state.playerId;
+      const status = roomData.status || "waiting";
+
+      el.waitingRoomCode.textContent = state.roomCode;
+      el.waitingPlayerName.textContent = state.playerName;
+      el.shareUrl.textContent = getShareUrl(state.roomCode);
+      renderPlayerList(el.waitingPlayerList, players, roomData.hostId);
+      renderPlayerList(el.playingPlayerList, players, roomData.hostId);
+      toggleHostControls(isHost, status);
+
+      if (status === "playing") {
+        renderPlayingView(roomData);
+      } else {
+        showWordwolfView("waiting");
+        setStatus(el.waitingStatus, "");
+      }
+    }
+
+    function renderPlayingView(roomData) {
+      const topicSet = roomData.game && roomData.game.topicSet;
+      const minorityPlayerId = roomData.game && roomData.game.minorityPlayerId;
+
+      if (!topicSet || !minorityPlayerId) {
+        el.myTopic.textContent = "読み込み中";
+      } else {
+        el.myTopic.textContent = minorityPlayerId === state.playerId ? topicSet.minority : topicSet.majority;
+      }
+
+      showWordwolfView("playing");
+      setStatus(el.playingStatus, "");
+    }
+
+    function renderPlayerList(listElement, players, hostId) {
+      const entries = Object.entries(players).sort(([, a], [, b]) => {
+        const left = a.joinedAt || 0;
+        const right = b.joinedAt || 0;
+        return left - right;
+      });
+
+      listElement.replaceChildren();
+
+      for (const [playerId, player] of entries) {
+        const item = document.createElement("li");
+        item.className = "player-item";
+
+        const name = document.createElement("span");
+        name.textContent = sanitizeNickname(player.name) || "名前なし";
+
+        const label = document.createElement("span");
+        label.className = "badge";
+        label.textContent = playerId === hostId ? "HOST" : "PLAYER";
+
+        item.append(name, label);
+        listElement.append(item);
+      }
+    }
+
+    async function startGame() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+
+      const playerIds = Object.keys(state.roomData.players || {});
+      if (playerIds.length < 3) {
+        setStatus(el.waitingStatus, "3人以上で開始してください。", "error");
+        return;
+      }
+
+      el.startGameButton.disabled = true;
+      setStatus(el.waitingStatus, "ゲームを開始しています...");
+
+      try {
+        const topicSet = topicSets[randomIndex(topicSets.length)];
+        const minorityPlayerId = playerIds[randomIndex(playerIds.length)];
+
+        await update(ref(state.db, `rooms/${state.roomCode}`), {
+          status: "playing",
+          game: {
+            topicSet,
+            minorityPlayerId,
+            startedAt: serverTimestamp()
+          }
+        });
+      } catch (error) {
+        setStatus(el.waitingStatus, `開始に失敗しました: ${error.message}`, "error");
+      } finally {
+        el.startGameButton.disabled = false;
+      }
+    }
+
+    async function resetRoom() {
+      if (!state.roomData || state.roomData.hostId !== state.playerId) return;
+
+      el.resetRoomButton.disabled = true;
+      setStatus(el.playingStatus, "部屋を待機中に戻しています...");
+
+      try {
+        await update(ref(state.db, `rooms/${state.roomCode}`), {
+          status: "waiting",
+          game: null
+        });
+      } catch (error) {
+        setStatus(el.playingStatus, `リセットに失敗しました: ${error.message}`, "error");
+      } finally {
+        el.resetRoomButton.disabled = false;
+      }
+    }
+
+    async function copyShareUrl() {
+      const shareUrl = getShareUrl(state.roomCode);
+      if (!shareUrl) return;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(shareUrl);
+        } else {
+          fallbackCopyText(shareUrl);
+        }
+        setStatus(el.waitingStatus, "共有URLをコピーしました。", "ok");
+      } catch (error) {
+        setStatus(el.waitingStatus, "コピーできませんでした。共有URLを長押ししてコピーしてください。", "error");
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+
+    async function generateUniqueRoomCode() {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const roomCode = generateRoomCode();
+        const snapshot = await get(ref(state.db, `rooms/${roomCode}`));
+        if (!snapshot.exists()) return roomCode;
+      }
+      throw new Error("部屋コードの生成に失敗しました。もう一度試してください。");
+    }
+
+    function generateRoomCode() {
+      let code = "";
+      for (let index = 0; index < ROOM_CODE_LENGTH; index += 1) {
+        code += ROOM_CODE_CHARS[randomIndex(ROOM_CODE_CHARS.length)];
+      }
+      return code;
+    }
+
+    function getOrCreatePlayerId() {
+      const savedId = readStorage(storageKeys.playerId);
+      if (savedId) return savedId;
+
+      const randomApi = window.crypto;
+      const newId = randomApi && typeof randomApi.randomUUID === "function"
+        ? randomApi.randomUUID()
+        : `player_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+
+      writeStorage(storageKeys.playerId, newId);
+      return newId;
+    }
+
+    function readStorage(key) {
+      try {
+        return localStorage.getItem(key) || "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function writeStorage(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (error) {
+        console.warn("localStorage is not available:", error);
+      }
+    }
+
+    function getNicknameOrShowError() {
+      const nickname = sanitizeNickname(el.nicknameInput.value);
+      if (!nickname) {
+        setStatus(el.setupStatus, "ニックネームを入力してください。", "error");
+        return "";
+      }
+      return nickname;
+    }
+
+    function sanitizeNickname(value) {
+      return String(value || "").trim().slice(0, 16);
+    }
+
+    function normalizeRoomCode(value) {
+      return String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .slice(0, 6);
+    }
+
+    function randomIndex(length) {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const values = new Uint32Array(1);
+        window.crypto.getRandomValues(values);
+        return values[0] % length;
+      }
+      return Math.floor(Math.random() * length);
+    }
+
+    function getRoomCodeFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return normalizeRoomCode(params.get("room") || "");
+    }
+
+    function updateUrlRoomCode(roomCode) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", roomCode);
+      window.history.replaceState(null, "", url.toString());
+    }
+
+    function getShareUrl(roomCode) {
+      if (!roomCode) return "";
+      return `${PUBLIC_BASE_URL}?room=${encodeURIComponent(roomCode)}`;
+    }
+
+    function showScreen(screenName) {
+      el.homeScreen.classList.toggle("is-active", screenName === "home");
+      el.wordwolfScreen.classList.toggle("is-active", screenName === "wordwolf");
+    }
+
+    function showWordwolfView(viewName) {
+      el.setupView.classList.toggle("is-active", viewName === "setup");
+      el.waitingView.classList.toggle("is-active", viewName === "waiting");
+      el.playingView.classList.toggle("is-active", viewName === "playing");
+    }
+
+    function toggleHostControls(isHost, status) {
+      el.hostWaitingControls.classList.toggle("is-visible", isHost && status !== "playing");
+      el.guestWaitingMessage.classList.toggle("is-visible", !isHost && status !== "playing");
+      el.hostPlayingControls.classList.toggle("is-visible", isHost && status === "playing");
+    }
+
+    function setSetupButtonsDisabled(disabled) {
+      el.createRoomButton.disabled = disabled;
+      el.joinRoomButton.disabled = disabled;
+    }
+
+    function setStatus(element, message, type = "info") {
+      element.textContent = message;
+      element.classList.toggle("is-error", type === "error");
+      element.classList.toggle("is-ok", type === "ok");
+    }
+
+    function isFirebaseConfigured(config) {
+      return Boolean(
+        config &&
+        config.apiKey &&
+        config.databaseURL &&
+        !String(config.apiKey).includes("PASTE_YOUR") &&
+        !String(config.databaseURL).includes("PASTE_YOUR")
+      );
+    }
+  </script>
+</body>
+</html>
